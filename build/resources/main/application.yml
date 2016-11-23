@@ -9,6 +9,13 @@ spring:
     validationQuery: "SELECT 1;"
     testOnBorrow: true 
 
+security:
+  oauth2:
+    client:
+      client-id: acme
+      client-secret: acmesecret
+      scope: read,write
+      auto-approve-scopes: '.*'
 
 logging.level.predictive: DEBUG
 
