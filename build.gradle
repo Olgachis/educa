@@ -1,0 +1,93 @@
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath("org.springframework.boot:spring-boot-gradle-plugin:${project.springBootVersion}")
+    classpath "org.zeroturnaround:gradle-jrebel-plugin:${project.jrebelPluginVersion}"
+  }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'rebel'
+apply plugin: 'spring-boot'
+
+def excludedFolders = [
+  './idea',
+  '.gradle',
+  "$buildDir/bundles",
+  "$buildDir/classes",
+  "$buildDir/dependency-cache",
+  "$buildDir/libs",
+  "$buildDir/reports",
+  "$buildDir/test-results",
+  "$buildDir/tmp",
+  "$buildDir/matrix",
+  "$buildDir/resources",
+  "$buildDir"
+]
+
+idea {
+  module {
+    inheritOutputDirs = false
+    jdkName = '1.8'
+    outputDir = file("$buildDir/classes/main/")
+    iml {
+      beforeMerged { module ->
+        module.dependencies.clear()
+        module.excludeFolders.clear()
+      }
+      whenMerged { module ->
+        module.dependencies*.exported = true
+        excludedFolders.each {
+          module.excludeFolders += module.pathFactory.path(file(it))
+        }
+      }
+    }
+    downloadSources = true
+  }
+}
+
+jar {
+  baseName = 'bsp-bot'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+boolean enableJRebel = System.getenv("ENABLE_JREBEL") == 'true'
+
+bootRun {
+  if(enableJRebel) {
+    String jrebelPath = "${System.getProperty('user.home')}/.jrebel/lib/libjrebel64.dylib"
+    if(new File(jrebelPath).exists()) {
+      jvmArgs = ["-agentpath:${jrebelPath}", "-Duser.timezone=UTC"]
+    } else {
+      jvmArgs = ["-Duser.timezone=UTC"]
+    }
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+List starters = ['web', 'data-jpa', 'data-rest', 'actuator', 'jersey', 'security']
+
+dependencies {
+  compile('org.springframework.boot:spring-boot-starter')
+  compile "org.slf4j:slf4j-api:${slf4jVersion}"
+  runtime "ch.qos.logback:logback-core:${logbackVersion}"
+  runtime "ch.qos.logback:logback-classic:${logbackVersion}"
+  compile "org.postgresql:postgresql:${postgresqlVersion}"
+  compile "org.flywaydb:flyway-core:${flywayVersion}"
+  compile "org.projectlombok:lombok:${lombokVersion}"
+  compile "com.squareup.okhttp3:okhttp:${okHttpVersion}"
+  compile "io.swagger:swagger-jersey2-jaxrs:${swaggerVersion}"
+  compile "org.springframework.security.oauth:spring-security-oauth2:${springSecurityOauthVersion}"
+  starters.each {
+    compile "org.springframework.boot:spring-boot-starter-${it}"
+  }
+  testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
