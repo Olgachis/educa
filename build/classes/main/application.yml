@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    driverClassName: org.postgresql.Driver  
+    url: jdbc:postgresql://localhost:5432/educa
+    validationInterval: 15000
+    timeBetweenEvictionRunsMillis: 5000
+    minEvictableIdleTimeMillis: 60000
+    maxAge: 600000
+    validationQuery: "SELECT 1;"
+    testOnBorrow: true 
+
+security:
+  oauth2:
+    client:
+      client-id: acme
+      client-secret: acmesecret
+      scope: read,write
+      auto-approve-scopes: '.*'
+
+logging.level.predictive: DEBUG
+
