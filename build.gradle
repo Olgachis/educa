@@ -85,6 +85,7 @@ dependencies {
   compile "com.squareup.okhttp3:okhttp:${okHttpVersion}"
   compile "io.swagger:swagger-jersey2-jaxrs:${swaggerVersion}"
   compile "org.springframework.security.oauth:spring-security-oauth2:${springSecurityOauthVersion}"
+  compile 'com.google.code.gson:gson:2.8.0'
   starters.each {
     compile "org.springframework.boot:spring-boot-starter-${it}"
   }

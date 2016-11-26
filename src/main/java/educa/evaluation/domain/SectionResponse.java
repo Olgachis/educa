@@ -21,6 +21,10 @@ public class SectionResponse extends BaseModel {
 
     @NotNull
     @ManyToOne
+    private Questionnaire questionnaire;
+
+    @NotNull
+    @ManyToOne
     private User user;
 
     @Lob

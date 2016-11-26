@@ -14,7 +14,15 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "questionnaire_section")
 @EqualsAndHashCode(callSuper = true)
-public class Section extends BaseModel {
+public class Section extends BaseModel implements Comparable<Section> {
+
+    private String dimension;
+
+    private String subdimension;
+
+    private String dimensionId;
+
+    private String subdimensionId;
 
     @ManyToOne
     private Questionnaire questionnaire;
@@ -24,4 +32,8 @@ public class Section extends BaseModel {
     @Type(type = "org.hibernate.type.TextType")
     private String questionJson;
 
+    @Override
+    public int compareTo(Section o) {
+        return subdimensionId.compareTo(o.subdimensionId);
+    }
 }
