@@ -1,0 +1,9 @@
+ALTER TABLE institution ADD COLUMN type VARCHAR(20) NOT NULL;
+ALTER TABLE institution ADD COLUMN internship BOOLEAN NOT NULL;
+ALTER TABLE institution ADD COLUMN initial_education BOOLEAN NOT NULL;
+ALTER TABLE institution ADD COLUMN preschool BOOLEAN NOT NULL;
+ALTER TABLE institution ADD COLUMN basic BOOLEAN NOT NULL;
+ALTER TABLE institution ADD COLUMN secondary BOOLEAN NOT NULL;
+ALTER TABLE institution ADD COLUMN high_school BOOLEAN NOT NULL;
+
+
