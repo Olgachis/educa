@@ -3,11 +3,12 @@ package educa.evaluation.domain;
 import javax.persistence.*;
 import java.util.*;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.GenericGenerator;
 
+@Data
 @MappedSuperclass
-@EqualsAndHashCode
 public abstract class BaseModel {
 
     @Id
