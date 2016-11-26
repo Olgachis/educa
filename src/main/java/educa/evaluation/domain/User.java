@@ -1,6 +1,7 @@
 package educa.evaluation.domain;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -12,6 +13,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @Entity
 @Table(name = "educa_user")
+@EqualsAndHashCode(callSuper = true)
 public class User extends BaseModel {
 
     @NotBlank

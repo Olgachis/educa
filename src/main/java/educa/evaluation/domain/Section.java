@@ -1,6 +1,7 @@
 package educa.evaluation.domain;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -12,6 +13,7 @@ import javax.persistence.Table;
 @Data
 @Entity
 @Table(name = "questionnaire_section")
+@EqualsAndHashCode(callSuper = true)
 public class Section extends BaseModel {
 
     @ManyToOne

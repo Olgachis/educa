@@ -1,6 +1,7 @@
 package educa.evaluation.domain;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Entity
+@EqualsAndHashCode(callSuper = true)
 public class SectionResponse extends BaseModel {
 
     @NotNull
