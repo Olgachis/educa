@@ -41,6 +41,7 @@ public class DimensionService {
     public DimensionService() {
         types = new HashMap<>();
         types.put("I.A.P.", "iap");
+        types.put("A.C.", "ac");
         gson = new Gson();
     }
 
@@ -95,7 +96,7 @@ public class DimensionService {
                                 List<Question> questions = dbQuestions.getQuestions().stream()
                                         .sorted()
                                         .map(q -> {
-                                            return new Question(q.getId(), "checkbox", q.getQuestion(), findResponse(sectionResponse, q.getId()));
+                                            return new Question(q.getId(), "checkbox", q.getQuestion(), findResponse(sectionResponse, q.getId()), q.getOptions());
                                         })
                                         .collect(Collectors.toList());
 
