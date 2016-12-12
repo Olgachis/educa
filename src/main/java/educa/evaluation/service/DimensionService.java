@@ -137,7 +137,7 @@ public class DimensionService {
                     (questions.getDependsOn().equals("internship") && institution.getInternship()) ||
                     (questions.getDependsOn().equals("initialEducation") && institution.getInitialEducation()) ||
                     (questions.getDependsOn().equals("basic") && institution.getBasic()) ||
-                    (questions.getDependsOn().equals("highSchool") && institution.getHighSchool()) ||
+                    (questions.getDependsOn().equals("high_school") && institution.getHighSchool()) ||
                     (questions.getDependsOn().equals("preschool") && institution.getPreschool()) ||
                     (questions.getDependsOn().equals("secondary") && institution.getSecondary()));
     }
