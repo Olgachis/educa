@@ -42,5 +42,3 @@ security:
 
 
 logging.level.predictive: DEBUG
-logging.level.org.springframework.security: DEBUG
-
