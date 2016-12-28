@@ -12,6 +12,7 @@ public class DbQuestion implements Comparable<DbQuestion> {
     private final int priority;
     private final String dependsOn;
     private final List<OptionData> options;
+    private Integer sortOrder;
 
     @Override
     public int compareTo(DbQuestion o) {

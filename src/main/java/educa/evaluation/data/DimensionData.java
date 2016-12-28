@@ -1,5 +1,6 @@
 package educa.evaluation.data;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Map;
@@ -11,6 +12,7 @@ public class DimensionData {
     public static class DimensionDataId implements Comparable<DimensionDataId> {
         private final String number;
         private final String name;
+        private final Integer sortOrder;
 
         @Override
         public int compareTo(DimensionDataId o) {

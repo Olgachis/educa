@@ -6,6 +6,7 @@ import educa.evaluation.data.SubDimensionData;
 import educa.evaluation.service.DimensionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
@@ -28,6 +29,12 @@ public class QuestionnaireEndpoint {
     @Path("{subdimensionId}")
     public QuestionnaireData saveEvaluation(@PathParam("subdimensionId") String subdimensionId, SubDimensionData subdimension) {
         return dimensionService.saveSubdimension(subdimensionId, subdimension);
+    }
+
+    @GET
+    @Path("sort")
+    public QuestionnaireData sortQuestions() {
+        return dimensionService.sortQuestions();
     }
 
 

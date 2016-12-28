@@ -2,6 +2,7 @@ package educa.evaluation.service;
 
 import educa.evaluation.domain.User;
 import educa.evaluation.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,8 @@ public class SecurityService {
         if(principal != null && principal instanceof CustomUserDetailsService.PersonUserDetails) {
             CustomUserDetailsService.PersonUserDetails details = (CustomUserDetailsService.PersonUserDetails) principal;
             return userRepository.findByUsername(details.getUsername());
+        } else if(principal != null && principal instanceof String) {
+            return userRepository.findByUsername((String)principal);
         }
         return null;
     }

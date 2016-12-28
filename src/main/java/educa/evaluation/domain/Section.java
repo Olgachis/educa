@@ -24,6 +24,8 @@ public class Section extends BaseModel implements Comparable<Section> {
 
     private String subdimensionId;
 
+    private Integer sortOrder;
+
     @ManyToOne
     private Questionnaire questionnaire;
 
@@ -36,4 +38,5 @@ public class Section extends BaseModel implements Comparable<Section> {
     public int compareTo(Section o) {
         return subdimensionId.compareTo(o.subdimensionId);
     }
+
 }
