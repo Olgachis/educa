@@ -3,11 +3,13 @@ package educa.evaluation.data;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Map;
+import java.util.*;
 
 @Data
 @Builder
-public class QuestionnaireData {
+public class QuestionnaireResults {
+
+    private Map<String, DimensionResults> dimensionResults;
 
     private String institutionName;
     private String institutionType;
@@ -19,6 +21,12 @@ public class QuestionnaireData {
     private boolean secondary;
     private boolean highSchool;
 
-    private final Map<String, DimensionData> dimensions;
+    private float maxQuestions;
+    private float maxPoints;
+    private float questions;
+    private float points;
+
+    private int totalAnswered;
+    private int total;
 
 }

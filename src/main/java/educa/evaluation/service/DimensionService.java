@@ -117,8 +117,7 @@ public class DimensionService {
         return null;
     }
 
-    public QuestionnaireData listQualityModelDimensions() {
-        User user = securityService.getCurrentUser();
+    public QuestionnaireData listQualityModelDimensions(User user) {
         Questionnaire questionnaire = questionnaireRepository.findOne(types.get(user.getInstitution().getType()));
 
         List<String> dimensionNames = questionnaire.getSections().stream()
@@ -142,10 +141,11 @@ public class DimensionService {
                                 DbQuestions dbQuestions = gson.fromJson(section.getQuestionJson(), DbQuestions.class);
                                 SectionResponse sectionResponse = sectionResponseRepository.findByUserAndSection(user, section);
 
+
                                 List<Question> questions = dbQuestions.getQuestions().stream()
                                         .sorted((q1, q2) -> q1.getSortOrder().compareTo(q2.getSortOrder()))
                                         .map(q -> {
-                                            return new Question(q.getId(), "checkbox", q.getQuestion(), findResponse(sectionResponse, q.getId()), q.getOptions());
+                                            return new Question(q.getId(), "checkbox", q.getQuestion(), findResponse(sectionResponse, q.getId()), q.getOptions(), q.getPriority());
                                         })
                                         .collect(Collectors.toList());
 
@@ -161,7 +161,21 @@ public class DimensionService {
                 })
                 .collect(Collectors.toMap(d -> d.getId().getNumber(), d -> d));
 
-        return new QuestionnaireData(dimensions);
+        return QuestionnaireData.builder()
+                .dimensions(dimensions)
+                .institutionName(user.getInstitution().getName())
+                .institutionType(user.getInstitution().getType())
+                .internship(user.getInstitution().getInternship())
+                .initialEducation(user.getInstitution().getInitialEducation())
+                .preschool(user.getInstitution().getPreschool())
+                .basic(user.getInstitution().getBasic())
+                .secondary(user.getInstitution().getSecondary())
+                .highSchool(user.getInstitution().getHighSchool())
+                .build();
+    }
+
+    public QuestionnaireData listQualityModelDimensions() {
+        return listQualityModelDimensions(securityService.getCurrentUser());
     }
 
     private String findResponse(SectionResponse sectionResponse, String id) {

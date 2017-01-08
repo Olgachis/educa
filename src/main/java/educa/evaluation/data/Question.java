@@ -11,4 +11,5 @@ public class Question {
     private final String question;
     private final String value;
     private final List<OptionData> options;
+    private final int priority;
 }

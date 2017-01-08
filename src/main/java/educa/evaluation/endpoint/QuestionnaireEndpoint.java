@@ -1,15 +1,14 @@
 package educa.evaluation.endpoint;
 
-import educa.evaluation.data.DimensionData;
-import educa.evaluation.data.QuestionnaireData;
-import educa.evaluation.data.SubDimensionData;
+import educa.evaluation.data.*;
 import educa.evaluation.service.DimensionService;
+import educa.evaluation.service.EvaluationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -20,9 +19,24 @@ public class QuestionnaireEndpoint {
     @Autowired
     private DimensionService dimensionService;
 
+    @Autowired
+    private EvaluationService evaluationService;
+
     @GET
     public QuestionnaireData getQualityEvaluationData() {
         return dimensionService.listQualityModelDimensions();
+    }
+
+    @GET
+    @Path("/results")
+    public QuestionnaireResults getQualityEvaluationResults() {
+        return evaluationService.listResults();
+    }
+
+    @GET
+    @Path("/averageResults")
+    public QuestionnaireResults getAverateQualityEvaluationResults() {
+        return evaluationService.educaAverage();
     }
 
     @POST
