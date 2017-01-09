@@ -94,7 +94,7 @@ public class EvaluationService {
     }
 
     public QuestionnaireResults listResults() {
-        return listResults(/*securityService.getCurrentUser()*/ userRepository.findByUsername("DAMAS").getUsername());
+        return listResults(securityService.getCurrentUser().getUsername());
     }
 
     public QuestionnaireResults listResults(@NotNull String username) {
