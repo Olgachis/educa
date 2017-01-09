@@ -53,6 +53,7 @@ public class EvaluationService {
                 .reduce((acc, curr) -> QuestionnaireResults.builder()
                         .maxPoints(curr.getMaxPoints() + acc.getMaxPoints())
                         .maxQuestions(curr.getMaxQuestions() + acc.getMaxQuestions())
+                        .maxCountingQuestions(curr.getMaxCountingQuestions() + acc.getMaxCountingQuestions())
                         .points(curr.getPoints() + acc.getPoints())
                         .questions(curr.getQuestions() + acc.getQuestions())
                         .dimensionResults(curr.getDimensionResults().keySet().stream()
@@ -63,6 +64,7 @@ public class EvaluationService {
                                             .id(accDr.getId())
                                             .maxPoints(accDr.getMaxPoints() + currDr.getMaxPoints())
                                             .maxQuestions(accDr.getMaxQuestions() + currDr.getMaxQuestions())
+                                            .maxCountingQuestions(accDr.getMaxCountingQuestions() + currDr.getMaxCountingQuestions())
                                             .points(accDr.getPoints() + currDr.getPoints())
                                             .questions(accDr.getQuestions() + currDr.getQuestions())
                                             .build();
@@ -72,6 +74,7 @@ public class EvaluationService {
                 .map(r -> QuestionnaireResults.builder()
                         .maxPoints(r.getMaxPoints() / partialResults.size())
                         .maxQuestions(r.getMaxQuestions() / partialResults.size())
+                        .maxCountingQuestions(r.getMaxCountingQuestions() / partialResults.size())
                         .points(r.getPoints() / partialResults.size())
                         .questions(r.getQuestions() / partialResults.size())
                         .totalAnswered(partialResults.size())
@@ -115,28 +118,25 @@ public class EvaluationService {
                                                     .filter(optionData -> optionData.getName().equals(question.getValue()))
                                                     .findFirst()
                                                     .orElse(null);
-                                            int value = Optional.ofNullable(option)
-                                                    .map(o -> {
-                                                        if(o.isValuable()) {
-                                                            return question.getPriority();
-                                                        } else {
-                                                            return 0;
-                                                        }
-                                                    })
-                                                    .orElse(0);
                                             return QuestionAcc.builder()
-                                                    .value(value)
+                                                    .value(Optional.ofNullable(option)
+                                                            .map(o -> o.isValuable()? question.getPriority():0)
+                                                            .orElse(0))
                                                     .questions(Optional.ofNullable(option)
                                                             .map(o -> 1)
                                                             .orElse(0))
                                                     .maxValue(question.getPriority())
                                                     .maxQuestions(1)
+                                                    .maxCountingQuestions(Optional.ofNullable(option)
+                                                       .map(o -> o.isValuable()?1:0)
+                                                       .orElse(0))
                                                     .build();
                                         })
                                         .reduce((acc, current) -> {
                                             return QuestionAcc.builder()
                                                     .maxValue(acc.getMaxValue() + current.getMaxValue())
                                                     .maxQuestions(acc.getMaxQuestions() + current.getMaxQuestions())
+                                                    .maxCountingQuestions(acc.getMaxCountingQuestions() + current.getMaxCountingQuestions())
                                                     .questions(acc.getQuestions() + current.getQuestions())
                                                     .value(acc.getValue() + current.getValue())
                                                     .build();
@@ -145,7 +145,9 @@ public class EvaluationService {
                                 return SubdimensionResults.builder()
                                         .id(subDimensionData.getId())
                                         .maxQuestions(subdimensionAcc.getMaxQuestions())
+                                        .maxCountingQuestions(subdimensionAcc.getMaxCountingQuestions())
                                         .maxPoints(subdimensionAcc.getMaxValue())
+                                        .minimumRequiredQuestions(subdimensionAcc.getMaxQuestions() * 0.7f)
                                         .questions(subdimensionAcc.getQuestions())
                                         .points(subdimensionAcc.getValue())
                                         .sortOrder(subDimensionData.getSortOrder())
@@ -157,6 +159,7 @@ public class EvaluationService {
                             .reduce((acc, curr) -> {
                                 return SubdimensionResults.builder()
                                         .maxQuestions(acc.getMaxQuestions() + curr.getMaxQuestions())
+                                        .maxCountingQuestions(acc.getMaxCountingQuestions() + curr.getMaxCountingQuestions())
                                         .maxPoints(acc.getMaxPoints() + curr.getMaxPoints())
                                         .questions(acc.getQuestions() + curr.getQuestions())
                                         .points(acc.getPoints() + curr.getPoints())
@@ -166,7 +169,9 @@ public class EvaluationService {
                                 return DimensionResults.builder()
                                         .id(dimensionData.getId())
                                         .maxQuestions(sub.getMaxQuestions())
+                                        .maxCountingQuestions(sub.getMaxCountingQuestions())
                                         .maxPoints(sub.getMaxPoints())
+                                        .minimumRequiredQuestions(sub.getMaxQuestions() * 0.7f)
                                         .questions(sub.getQuestions())
                                         .points(sub.getPoints())
                                         .subdimensionResults(subdimensionResults.stream()
@@ -183,6 +188,7 @@ public class EvaluationService {
                 .reduce((acc, curr) -> {
                     return DimensionResults.builder()
                             .maxQuestions(acc.getMaxQuestions() + curr.getMaxQuestions())
+                            .maxCountingQuestions(acc.getMaxCountingQuestions() + curr.getMaxCountingQuestions())
                             .maxPoints(acc.getMaxPoints() + curr.getMaxPoints())
                             .questions(acc.getQuestions() + curr.getQuestions())
                             .points(acc.getPoints() + curr.getPoints())
@@ -193,6 +199,8 @@ public class EvaluationService {
                                 .collect(Collectors.toMap(dr -> dr.getId().getNumber(), dr -> dr)))
                         .maxPoints(d.getMaxPoints())
                         .maxQuestions(d.getMaxQuestions())
+                        .maxCountingQuestions(d.getMaxCountingQuestions())
+                        .minimumRequiredQuestions(d.getMaxQuestions() * 0.7f)
                         .questions(d.getQuestions())
                         .points(d.getPoints())
                         .institutionName(user.getInstitution().getName())
@@ -214,6 +222,7 @@ public class EvaluationService {
         private int questions;
         private int maxValue;
         private int maxQuestions;
+        private int maxCountingQuestions;
     }
 
 }

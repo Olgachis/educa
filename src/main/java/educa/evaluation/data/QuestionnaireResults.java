@@ -22,6 +22,8 @@ public class QuestionnaireResults {
     private boolean highSchool;
 
     private float maxQuestions;
+    private float maxCountingQuestions;
+    private float minimumRequiredQuestions;
     private float maxPoints;
     private float questions;
     private float points;

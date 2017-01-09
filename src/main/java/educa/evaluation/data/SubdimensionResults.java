@@ -11,6 +11,8 @@ public class SubdimensionResults {
 
     private float maxQuestions;
     private float maxPoints;
+    private float maxCountingQuestions;
+    private float minimumRequiredQuestions;
     private float questions;
     private float points;
 
