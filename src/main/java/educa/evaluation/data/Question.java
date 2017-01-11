@@ -10,6 +10,7 @@ public class Question {
     private final String type;
     private final String question;
     private final String value;
+    private final boolean valuable;
     private final List<OptionData> options;
     private final int priority;
 }

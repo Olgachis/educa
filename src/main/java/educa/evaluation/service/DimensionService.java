@@ -145,7 +145,17 @@ public class DimensionService {
                                 List<Question> questions = dbQuestions.getQuestions().stream()
                                         .sorted((q1, q2) -> q1.getSortOrder().compareTo(q2.getSortOrder()))
                                         .map(q -> {
-                                            return new Question(q.getId(), "checkbox", q.getQuestion(), findResponse(sectionResponse, q.getId()), q.getOptions(), q.getPriority());
+                                            String response = findResponse(sectionResponse, q.getId());
+                                            boolean valuable = "true".equals(response) || Optional.ofNullable(q.getOptions())
+                                                    .map(options -> {
+                                                        return options.stream()
+                                                                .filter(OptionData::isValuable)
+                                                                .map(OptionData::getName)
+                                                                .collect(Collectors.toList())
+                                                                .contains(response);
+                                                    })
+                                                    .orElse(false);
+                                            return new Question(q.getId(), "checkbox", q.getQuestion(), response, valuable, q.getOptions(), q.getPriority());
                                         })
                                         .collect(Collectors.toList());
 
