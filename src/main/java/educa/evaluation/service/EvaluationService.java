@@ -1,7 +1,12 @@
 package educa.evaluation.service;
 
+import com.google.gson.Gson;
 import educa.evaluation.data.*;
+import educa.evaluation.domain.Institution;
+import educa.evaluation.domain.QuestionnaireResponse;
 import educa.evaluation.domain.User;
+import educa.evaluation.repository.InstitutionRepository;
+import educa.evaluation.repository.QuestionnaireResponseRepository;
 import educa.evaluation.repository.SectionResponseRepository;
 import educa.evaluation.repository.UserRepository;
 import lombok.Builder;
@@ -12,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +26,6 @@ import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 public class EvaluationService {
 
     @Autowired
@@ -34,6 +39,12 @@ public class EvaluationService {
 
     @Autowired
     private SecurityService securityService;
+
+    @Autowired
+    private InstitutionRepository institutionRepository;
+
+    @Autowired
+    private QuestionnaireResponseRepository questionnaireResponseRepository;
 
     public QuestionnaireResults educaAverage() {
         List<String> usernames =
@@ -128,8 +139,8 @@ public class EvaluationService {
                                                     .maxValue(question.getPriority())
                                                     .maxQuestions(1)
                                                     .maxCountingQuestions(Optional.ofNullable(option)
-                                                       .map(o -> o.isValuable()?1:0)
-                                                       .orElse(0))
+                                                            .map(o -> o.isValuable()?1:0)
+                                                            .orElse(0))
                                                     .build();
                                         })
                                         .reduce((acc, current) -> {
@@ -213,6 +224,91 @@ public class EvaluationService {
                         .highSchool(user.getInstitution().getHighSchool())
                         .build())
                 .orElse(QuestionnaireResults.builder().build());
+    }
+
+    public ImprovementPlan getImprovementPlan() {
+        return getImprovementPlan(securityService.getCurrentUser().getInstitution().getId());
+    }
+
+    public ImprovementPlan getImprovementPlan(String institutionId) {
+        Institution institution = institutionRepository.findOne(institutionId);
+        QuestionnaireResponse response = questionnaireResponseRepository.findByInstitution(institution);
+
+        return Optional.ofNullable(response)
+                .map(this::mapQuestionnaire)
+                .orElseGet(() -> {
+                    return getDefaultMap(institution);
+                });
+    }
+
+    private ImprovementPlan getDefaultMap(Institution institution) {
+        User user = userRepository.findByInstitution(institution);
+        QuestionnaireData data = dimensionService.listQualityModelDimensions(user);
+        QuestionnaireResults results = listResults(user.getUsername());
+        int priorityYear = (int)Math.ceil((results.getMaxQuestions() - results.getMaxCountingQuestions()) / 4.0f);
+        List<ImprovementQuestion> questions = data.getDimensions().values().stream()
+                .sorted((d1, d2) -> {
+                    return d1.getId().getSortOrder().compareTo(d2.getId().getSortOrder());
+                })
+                .flatMap((dimension) -> {
+                    return dimension.getSubdimensions().values().stream()
+                            .sorted((s1, s2) -> {
+                                return s1.getSortOrder().compareTo(s2.getSortOrder());
+                            })
+                            .flatMap((subdimension) -> {
+                                return subdimension.getQuestions().stream()
+                                        .filter(q -> !q.isValuable())
+                                        .map((question) -> {
+                                            ImprovementQuestion qres = new ImprovementQuestion();
+                                            qres.setQuestion(question.getQuestion());
+                                            qres.setId(question.getId());
+                                            qres.setDimensionId(dimension.getId());
+                                            qres.setSubdimensionId(subdimension.getId());
+                                            qres.setPriority(question.getPriority());
+                                            return qres;
+                                        });
+                            });
+                })
+                .collect(Collectors.toList());
+
+        List<ImprovementQuestion> questionData = new ArrayList<>(questions);
+
+        questionData.stream()
+                .sorted((q1, q2) -> {
+                    return (-q1.getPriority()) - (-q2.getPriority());
+                })
+                .limit(priorityYear)
+                .forEach(q -> {
+                    q.setSelected(true);
+                });
+
+        ImprovementPlan result = new ImprovementPlan();
+
+        result.setQuestions(questions);
+
+        return result;
+    }
+
+    private ImprovementPlan mapQuestionnaire(QuestionnaireResponse response) {
+        return new Gson().fromJson(response.getResponseJson(), ImprovementPlan.class);
+    }
+
+    public ImprovementPlan saveImprovementPlan(ImprovementPlan plan) {
+        Gson gson = new Gson();
+        String jsonPlan = gson.toJson(plan);
+        User user = securityService.getCurrentUser();
+
+        QuestionnaireResponse response = Optional.ofNullable(questionnaireResponseRepository.findByInstitution(user.getInstitution()))
+                .orElseGet(() -> {
+                        QuestionnaireResponse newResponse = new QuestionnaireResponse();
+                        newResponse.setInstitution(user.getInstitution());
+                        return newResponse;
+                });
+
+        response.setResponseJson(jsonPlan);
+        questionnaireResponseRepository.save(response);
+
+        return plan;
     }
 
     @Data

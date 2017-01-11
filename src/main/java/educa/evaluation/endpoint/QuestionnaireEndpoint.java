@@ -34,6 +34,18 @@ public class QuestionnaireEndpoint {
     }
 
     @GET
+    @Path("/improvementPlan")
+    public ImprovementPlan getImprovementPlan() {
+        return evaluationService.getImprovementPlan();
+    }
+
+    @POST
+    @Path("/improvementPlan")
+    public ImprovementPlan getImprovementPlan(ImprovementPlan plan) {
+        return evaluationService.saveImprovementPlan(plan);
+    }
+
+    @GET
     @Path("/averageResults")
     public QuestionnaireResults getAverateQualityEvaluationResults() {
         return evaluationService.educaAverage();
