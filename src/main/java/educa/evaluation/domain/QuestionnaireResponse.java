@@ -15,7 +15,7 @@ import javax.persistence.ManyToOne;
 public class QuestionnaireResponse extends BaseModel {
 
     @ManyToOne
-    private Institution institution;
+    private Campus campus;
 
     @Lob
     @NotBlank

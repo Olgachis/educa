@@ -9,10 +9,13 @@ import javax.persistence.Entity;
 @Data
 @Entity
 @EqualsAndHashCode(callSuper = true)
-public class Institution extends BaseModel {
+public class Campus extends BaseModel {
 
     @NotBlank
     private String name;
+
+    @NotBlank
+    private String campusName;
 
     @NotBlank
     private String type;
@@ -28,5 +31,17 @@ public class Institution extends BaseModel {
     private Boolean secondary;
 
     private Boolean highSchool;
+
+    private Boolean primaryCampus;
+
+    public String getName() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(name);
+        if(campusName != null) {
+            builder.append(" / ");
+            builder.append(campusName);
+        }
+        return builder.toString();
+    }
 
 }

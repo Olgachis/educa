@@ -26,6 +26,8 @@ public class Section extends BaseModel implements Comparable<Section> {
 
     private Integer sortOrder;
 
+    private Boolean campusRelevant;
+
     @ManyToOne
     private Questionnaire questionnaire;
 

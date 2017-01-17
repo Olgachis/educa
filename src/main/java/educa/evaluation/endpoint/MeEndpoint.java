@@ -1,7 +1,7 @@
 package educa.evaluation.endpoint;
 
 import educa.evaluation.data.UserData;
-import educa.evaluation.domain.Institution;
+import educa.evaluation.domain.Campus;
 import educa.evaluation.domain.User;
 import educa.evaluation.service.SecurityService;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +26,8 @@ public class MeEndpoint {
     public UserData getUser() {
         User user = securityService.getCurrentUser();
         String institutionName = Optional.ofNullable(user)
-                .map(User::getInstitution)
-                .map(Institution::getName)
+                .map(User::getCampus)
+                .map(Campus::getName)
                 .orElse(null);
         if(user == null) {
             return null;

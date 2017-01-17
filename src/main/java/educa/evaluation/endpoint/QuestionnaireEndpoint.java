@@ -24,7 +24,7 @@ public class QuestionnaireEndpoint {
 
     @GET
     public QuestionnaireData getQualityEvaluationData() {
-        return dimensionService.listQualityModelDimensions();
+        return dimensionService.listQualityModelDimensions(true);
     }
 
     @GET
@@ -54,7 +54,7 @@ public class QuestionnaireEndpoint {
     @POST
     @Path("{subdimensionId}")
     public QuestionnaireData saveEvaluation(@PathParam("subdimensionId") String subdimensionId, SubDimensionData subdimension) {
-        return dimensionService.saveSubdimension(subdimensionId, subdimension);
+        return dimensionService.saveSubdimension(subdimensionId, subdimension, true);
     }
 
     @GET

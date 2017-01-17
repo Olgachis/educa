@@ -27,6 +27,6 @@ public class User extends BaseModel {
     private Role role;
 
     @ManyToOne
-    private Institution institution;
+    private Campus campus;
 
 }

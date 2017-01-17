@@ -51,9 +51,9 @@ public class DimensionService {
         gson = new Gson();
     }
 
-    public QuestionnaireData saveSubdimension(String subdimensionId, SubDimensionData subdimension) {
+    public QuestionnaireData saveSubdimension(String subdimensionId, SubDimensionData subdimension, boolean filterCampus) {
         User user = securityService.getCurrentUser();
-        Questionnaire questionnaire = questionnaireRepository.findOne(types.get(user.getInstitution().getType()));
+        Questionnaire questionnaire = questionnaireRepository.findOne(types.get(user.getCampus().getType()));
 
         Section section = sectionRepository.findByQuestionnaireAndSubdimensionId(questionnaire, subdimensionId);
         SectionResponse responseDomain = Optional.ofNullable(sectionResponseRepository.findByUserAndSection(user, section))
@@ -77,7 +77,7 @@ public class DimensionService {
 
         sectionResponseRepository.save(responseDomain);
 
-        return listQualityModelDimensions();
+        return listQualityModelDimensions(filterCampus);
     }
 
     public QuestionnaireData sortQuestions() {
@@ -117,8 +117,9 @@ public class DimensionService {
         return null;
     }
 
-    public QuestionnaireData listQualityModelDimensions(User user) {
-        Questionnaire questionnaire = questionnaireRepository.findOne(types.get(user.getInstitution().getType()));
+    public QuestionnaireData listQualityModelDimensions(User user, boolean filterCampus) {
+        Campus campus = user.getCampus();
+        Questionnaire questionnaire = questionnaireRepository.findOne(types.get(campus.getType()));
 
         List<String> dimensionNames = questionnaire.getSections().stream()
                 .sorted((s1, s2) -> Integer.parseInt(s1.getDimensionId()) - Integer.parseInt(s2.getDimensionId()))
@@ -128,6 +129,13 @@ public class DimensionService {
 
 
         Map<String, DimensionData> dimensions = questionnaire.getSections().stream()
+                .filter(section -> {
+                    if(filterCampus) {
+                        return campus.getPrimaryCampus() || section.getCampusRelevant();
+                    } else {
+                        return true;
+                    }
+                })
                 .collect(Collectors.groupingBy(section -> {
                     return new DimensionData.DimensionDataId(section.getDimensionId(), section.getDimension(), dimensionNames.indexOf(section.getDimension()));
                 }))
@@ -173,19 +181,19 @@ public class DimensionService {
 
         return QuestionnaireData.builder()
                 .dimensions(dimensions)
-                .institutionName(user.getInstitution().getName())
-                .institutionType(user.getInstitution().getType())
-                .internship(user.getInstitution().getInternship())
-                .initialEducation(user.getInstitution().getInitialEducation())
-                .preschool(user.getInstitution().getPreschool())
-                .basic(user.getInstitution().getBasic())
-                .secondary(user.getInstitution().getSecondary())
-                .highSchool(user.getInstitution().getHighSchool())
+                .institutionName(user.getCampus().getName())
+                .institutionType(user.getCampus().getType())
+                .internship(user.getCampus().getInternship())
+                .initialEducation(user.getCampus().getInitialEducation())
+                .preschool(user.getCampus().getPreschool())
+                .basic(user.getCampus().getBasic())
+                .secondary(user.getCampus().getSecondary())
+                .highSchool(user.getCampus().getHighSchool())
                 .build();
     }
 
-    public QuestionnaireData listQualityModelDimensions() {
-        return listQualityModelDimensions(securityService.getCurrentUser());
+    public QuestionnaireData listQualityModelDimensions(boolean filterCampus) {
+        return listQualityModelDimensions(securityService.getCurrentUser(), filterCampus);
     }
 
     private String findResponse(SectionResponse sectionResponse, String id) {
@@ -204,16 +212,16 @@ public class DimensionService {
 
     private boolean checkElegibility(User user, Section s) {
         DbQuestions questions = gson.fromJson(s.getQuestionJson(), DbQuestions.class);
-        Institution institution = user.getInstitution();
+        Campus campus = user.getCampus();
 
         return questions.getDependsOn() == null ||
                 (questions.getDependsOn() != null &&
-                        (questions.getDependsOn().equals("internship") && institution.getInternship()) ||
-                        (questions.getDependsOn().equals("initialEducation") && institution.getInitialEducation()) ||
-                        (questions.getDependsOn().equals("basic") && institution.getBasic()) ||
-                        (questions.getDependsOn().equals("high_school") && institution.getHighSchool()) ||
-                        (questions.getDependsOn().equals("preschool") && institution.getPreschool()) ||
-                        (questions.getDependsOn().equals("secondary") && institution.getSecondary()));
+                        (questions.getDependsOn().equals("internship") && campus.getInternship()) ||
+                        (questions.getDependsOn().equals("initialEducation") && campus.getInitialEducation()) ||
+                        (questions.getDependsOn().equals("basic") && campus.getBasic()) ||
+                        (questions.getDependsOn().equals("high_school") && campus.getHighSchool()) ||
+                        (questions.getDependsOn().equals("preschool") && campus.getPreschool()) ||
+                        (questions.getDependsOn().equals("secondary") && campus.getSecondary()));
     }
 
     private Integer evalNumber(String dotted, int maxDigits, int base) {

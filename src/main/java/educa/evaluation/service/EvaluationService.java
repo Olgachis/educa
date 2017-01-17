@@ -2,7 +2,8 @@ package educa.evaluation.service;
 
 import com.google.gson.Gson;
 import educa.evaluation.data.*;
-import educa.evaluation.domain.Institution;
+import educa.evaluation.domain.Campus;
+import educa.evaluation.domain.Campus;
 import educa.evaluation.domain.QuestionnaireResponse;
 import educa.evaluation.domain.User;
 import educa.evaluation.repository.InstitutionRepository;
@@ -49,7 +50,7 @@ public class EvaluationService {
     public QuestionnaireResults educaAverage() {
         List<String> usernames =
                 StreamSupport.stream(userRepository.findAll().spliterator(), false)
-                        .filter(u -> u.getInstitution() != null)
+                        .filter(u -> u.getCampus() != null)
                         .map(User::getUsername)
                         .collect(Collectors.toList());
 
@@ -110,7 +111,7 @@ public class EvaluationService {
 
     public QuestionnaireResults listResults(@NotNull String username) {
         User user = userRepository.findByUsername(username);
-        QuestionnaireData questionnaireData = dimensionService.listQualityModelDimensions(user);
+        QuestionnaireData questionnaireData = dimensionService.listQualityModelDimensions(user, false);
 
         List<DimensionResults> dimensionResults = questionnaireData.getDimensions().values()
                 .stream()
@@ -214,36 +215,36 @@ public class EvaluationService {
                         .minimumRequiredQuestions(d.getMaxQuestions() * 0.7f)
                         .questions(d.getQuestions())
                         .points(d.getPoints())
-                        .institutionName(user.getInstitution().getName())
-                        .institutionType(user.getInstitution().getType())
-                        .internship(user.getInstitution().getInternship())
-                        .initialEducation(user.getInstitution().getInitialEducation())
-                        .preschool(user.getInstitution().getPreschool())
-                        .basic(user.getInstitution().getBasic())
-                        .secondary(user.getInstitution().getSecondary())
-                        .highSchool(user.getInstitution().getHighSchool())
+                        .institutionName(user.getCampus().getName())
+                        .institutionType(user.getCampus().getType())
+                        .internship(user.getCampus().getInternship())
+                        .initialEducation(user.getCampus().getInitialEducation())
+                        .preschool(user.getCampus().getPreschool())
+                        .basic(user.getCampus().getBasic())
+                        .secondary(user.getCampus().getSecondary())
+                        .highSchool(user.getCampus().getHighSchool())
                         .build())
                 .orElse(QuestionnaireResults.builder().build());
     }
 
     public ImprovementPlan getImprovementPlan() {
-        return getImprovementPlan(securityService.getCurrentUser().getInstitution().getId());
+        return getImprovementPlan(securityService.getCurrentUser().getCampus().getId());
     }
 
     public ImprovementPlan getImprovementPlan(String institutionId) {
-        Institution institution = institutionRepository.findOne(institutionId);
-        QuestionnaireResponse response = questionnaireResponseRepository.findByInstitution(institution);
+        Campus campus = institutionRepository.findOne(institutionId);
+        QuestionnaireResponse response = questionnaireResponseRepository.findByCampus(campus);
 
         return Optional.ofNullable(response)
                 .map(this::mapQuestionnaire)
                 .orElseGet(() -> {
-                    return getDefaultMap(institution);
+                    return getDefaultMap(campus);
                 });
     }
 
-    private ImprovementPlan getDefaultMap(Institution institution) {
-        User user = userRepository.findByInstitution(institution);
-        QuestionnaireData data = dimensionService.listQualityModelDimensions(user);
+    private ImprovementPlan getDefaultMap(Campus campus) {
+        User user = userRepository.findByCampus(campus);
+        QuestionnaireData data = dimensionService.listQualityModelDimensions(user, false);
         QuestionnaireResults results = listResults(user.getUsername());
         int priorityYear = (int)Math.ceil((results.getMaxQuestions() - results.getMaxCountingQuestions()) / 4.0f);
         List<ImprovementQuestion> questions = data.getDimensions().values().stream()
@@ -298,10 +299,10 @@ public class EvaluationService {
         String jsonPlan = gson.toJson(plan);
         User user = securityService.getCurrentUser();
 
-        QuestionnaireResponse response = Optional.ofNullable(questionnaireResponseRepository.findByInstitution(user.getInstitution()))
+        QuestionnaireResponse response = Optional.ofNullable(questionnaireResponseRepository.findByCampus(user.getCampus()))
                 .orElseGet(() -> {
                         QuestionnaireResponse newResponse = new QuestionnaireResponse();
-                        newResponse.setInstitution(user.getInstitution());
+                        newResponse.setCampus(user.getCampus());
                         return newResponse;
                 });
 
