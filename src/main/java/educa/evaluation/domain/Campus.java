@@ -5,11 +5,15 @@ import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 
 @Data
 @Entity
 @EqualsAndHashCode(callSuper = true)
 public class Campus extends BaseModel {
+
+    @ManyToOne
+    private Institution institution;
 
     @NotBlank
     private String name;

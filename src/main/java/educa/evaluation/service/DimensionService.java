@@ -3,9 +3,7 @@ package educa.evaluation.service;
 import com.google.gson.Gson;
 import educa.evaluation.data.*;
 import educa.evaluation.domain.*;
-import educa.evaluation.repository.QuestionnaireRepository;
-import educa.evaluation.repository.SectionRepository;
-import educa.evaluation.repository.SectionResponseRepository;
+import educa.evaluation.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +27,12 @@ import java.util.stream.Collectors;
 public class DimensionService {
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CampusRepository campusRepository;
+
+    @Autowired
     private SecurityService securityService;
 
     @Autowired
@@ -47,6 +51,7 @@ public class DimensionService {
     public DimensionService() {
         types = new HashMap<>();
         types.put("I.A.P.", "iap");
+        types.put("A.B.P.", "iap");
         types.put("A.C.", "ac");
         gson = new Gson();
     }
@@ -121,6 +126,17 @@ public class DimensionService {
         Campus campus = user.getCampus();
         Questionnaire questionnaire = questionnaireRepository.findOne(types.get(campus.getType()));
 
+        final Campus primaryCampus;
+        final User primaryUser;
+
+        if(!campus.getPrimaryCampus()) {
+            primaryCampus = campusRepository.findByInstitutionAndPrimaryCampus(campus.getInstitution(), true);
+            primaryUser = userRepository.findByCampus(primaryCampus);
+        } else {
+            primaryCampus = null;
+            primaryUser = null;
+        }
+
         List<String> dimensionNames = questionnaire.getSections().stream()
                 .sorted((s1, s2) -> Integer.parseInt(s1.getDimensionId()) - Integer.parseInt(s2.getDimensionId()))
                 .map(Section::getDimension)
@@ -147,8 +163,13 @@ public class DimensionService {
                             .sorted()
                             .map(section -> {
                                 DbQuestions dbQuestions = gson.fromJson(section.getQuestionJson(), DbQuestions.class);
-                                SectionResponse sectionResponse = sectionResponseRepository.findByUserAndSection(user, section);
+                                final SectionResponse sectionResponse;
 
+                                if(!campus.getPrimaryCampus() && !section.getCampusRelevant()) {
+                                    sectionResponse = sectionResponseRepository.findByUserAndSection(primaryUser, section);
+                                } else {
+                                    sectionResponse = sectionResponseRepository.findByUserAndSection(user, section);
+                                }
 
                                 List<Question> questions = dbQuestions.getQuestions().stream()
                                         .sorted((q1, q2) -> q1.getSortOrder().compareTo(q2.getSortOrder()))

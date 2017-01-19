@@ -3,10 +3,9 @@ package educa.evaluation.service;
 import com.google.gson.Gson;
 import educa.evaluation.data.*;
 import educa.evaluation.domain.Campus;
-import educa.evaluation.domain.Campus;
 import educa.evaluation.domain.QuestionnaireResponse;
 import educa.evaluation.domain.User;
-import educa.evaluation.repository.InstitutionRepository;
+import educa.evaluation.repository.CampusRepository;
 import educa.evaluation.repository.QuestionnaireResponseRepository;
 import educa.evaluation.repository.SectionResponseRepository;
 import educa.evaluation.repository.UserRepository;
@@ -15,7 +14,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -42,7 +40,7 @@ public class EvaluationService {
     private SecurityService securityService;
 
     @Autowired
-    private InstitutionRepository institutionRepository;
+    private CampusRepository campusRepository;
 
     @Autowired
     private QuestionnaireResponseRepository questionnaireResponseRepository;
@@ -232,7 +230,7 @@ public class EvaluationService {
     }
 
     public ImprovementPlan getImprovementPlan(String institutionId) {
-        Campus campus = institutionRepository.findOne(institutionId);
+        Campus campus = campusRepository.findOne(institutionId);
         QuestionnaireResponse response = questionnaireResponseRepository.findByCampus(campus);
 
         return Optional.ofNullable(response)
