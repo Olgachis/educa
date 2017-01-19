@@ -14,6 +14,10 @@ public class ImprovementQuestion {
 
     private int priority;
 
+    private double subdimensionWeights;
+
+    private Integer campusPriority;
+
     private String question;
 
     private String action;

@@ -255,6 +255,21 @@ public class EvaluationService {
                                 return s1.getSortOrder().compareTo(s2.getSortOrder());
                             })
                             .flatMap((subdimension) -> {
+                                double maxPoints = subdimension.getQuestions().stream()
+                                        .mapToDouble(Question::getPriority)
+                                        .sum();
+                                double points = subdimension.getQuestions().stream()
+                                        .filter(Question::isValuable)
+                                        .mapToDouble(Question::getPriority)
+                                        .sum();
+                                double maxQuestions = subdimension.getQuestions().stream()
+                                        .mapToDouble(q -> 1)
+                                        .sum();
+                                double answeredQuestions = subdimension.getQuestions().stream()
+                                        .filter(Question::isValuable)
+                                        .mapToDouble(q -> 1)
+                                        .sum();
+                                double weight = (maxQuestions - answeredQuestions) / (points - maxPoints);
                                 return subdimension.getQuestions().stream()
                                         .filter(q -> !q.isValuable())
                                         .map((question) -> {
@@ -263,7 +278,9 @@ public class EvaluationService {
                                             qres.setId(question.getId());
                                             qres.setDimensionId(dimension.getId());
                                             qres.setSubdimensionId(subdimension.getId());
+                                            qres.setSubdimensionWeights(weight);
                                             qres.setPriority(question.getPriority());
+                                            qres.setCampusPriority(3);
                                             return qres;
                                         });
                             });
@@ -271,6 +288,13 @@ public class EvaluationService {
                 .collect(Collectors.toList());
 
         List<ImprovementQuestion> questionData = new ArrayList<>(questions);
+
+        questions = questions.stream()
+                .sorted((q1, q2) -> {
+                    return (-q1.getPriority() * 100000 - (int)(q1.getSubdimensionWeights() * 100)) - (-q2.getPriority() * 100000 - (int)(q1.getSubdimensionWeights() * 100));
+                })
+                .collect(Collectors.toList());
+
 
         questionData.stream()
                 .sorted((q1, q2) -> {
