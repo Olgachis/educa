@@ -16,10 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -332,6 +329,139 @@ public class EvaluationService {
         questionnaireResponseRepository.save(response);
 
         return plan;
+    }
+
+    public QuestionnaireResults listPrediction() {
+        return listPrediction(securityService.getCurrentUser().getUsername());
+    }
+
+    private QuestionnaireResults listPrediction(String username) {
+        User user = userRepository.findByUsername(username);
+        ImprovementPlan improvementPlan = getImprovementPlan(user.getCampus().getId());
+        QuestionnaireData questionnaireData = dimensionService.listQualityModelDimensions(user, false);
+
+        Map<String, Boolean> plannedResults = improvementPlan.getQuestions().stream()
+                .collect(Collectors.toMap(q -> q.getId(), q->q.isSelected()));
+
+        List<DimensionResults> dimensionResults = questionnaireData.getDimensions().values()
+                .stream()
+                .map(dimensionData -> {
+                    List<SubdimensionResults> subdimensionResults = dimensionData.getSubdimensions().values()
+                            .stream()
+                            .map(subDimensionData -> {
+                                QuestionAcc subdimensionAcc = subDimensionData.getQuestions().stream()
+                                        .map(question -> {
+                                            List<OptionData> options = Optional.ofNullable(question.getOptions())
+                                                    .orElse(Arrays.asList(
+                                                            new OptionData("true", true),
+                                                            new OptionData("false", false)
+                                                    ));
+                                            OptionData option = options.stream()
+                                                    .filter(optionData -> optionData.getName().equals(question.getValue()))
+                                                    .findFirst()
+                                                    .orElse(null);
+                                            int value = Optional.ofNullable(option)
+                                                            .map(o -> o.isValuable()? question.getPriority():0)
+                                                            .orElse(0);
+                                            int questionAnswered = Optional.ofNullable(option)
+                                                            .map(o -> 1)
+                                                            .orElse(0);
+                                            int maxCountingQuestion = Optional.ofNullable(option)
+                                                            .map(o -> o.isValuable()?1:0)
+                                                            .orElse(0);
+                                            if(Optional.ofNullable(plannedResults.get(question.getId())).orElse(false)) {
+                                                value = question.getPriority();
+                                                maxCountingQuestion = 1;
+                                            }
+                                            return QuestionAcc.builder()
+                                                    .value(value)
+                                                    .questions(questionAnswered)
+                                                    .maxValue(question.getPriority())
+                                                    .maxQuestions(1)
+                                                    .maxCountingQuestions(maxCountingQuestion)
+                                                    .build();
+                                        })
+                                        .reduce((acc, current) -> {
+                                            return QuestionAcc.builder()
+                                                    .maxValue(acc.getMaxValue() + current.getMaxValue())
+                                                    .maxQuestions(acc.getMaxQuestions() + current.getMaxQuestions())
+                                                    .maxCountingQuestions(acc.getMaxCountingQuestions() + current.getMaxCountingQuestions())
+                                                    .questions(acc.getQuestions() + current.getQuestions())
+                                                    .value(acc.getValue() + current.getValue())
+                                                    .build();
+                                        })
+                                        .orElse(QuestionAcc.builder().build());
+                                return SubdimensionResults.builder()
+                                        .id(subDimensionData.getId())
+                                        .maxQuestions(subdimensionAcc.getMaxQuestions())
+                                        .maxCountingQuestions(subdimensionAcc.getMaxCountingQuestions())
+                                        .maxPoints(subdimensionAcc.getMaxValue())
+                                        .minimumRequiredQuestions(subdimensionAcc.getMaxQuestions() * 0.7f)
+                                        .questions(subdimensionAcc.getQuestions())
+                                        .points(subdimensionAcc.getValue())
+                                        .sortOrder(subDimensionData.getSortOrder())
+                                        .build();
+                            })
+                            .collect(Collectors.toList());
+
+                    DimensionResults ds = subdimensionResults.stream()
+                            .reduce((acc, curr) -> {
+                                return SubdimensionResults.builder()
+                                        .maxQuestions(acc.getMaxQuestions() + curr.getMaxQuestions())
+                                        .maxCountingQuestions(acc.getMaxCountingQuestions() + curr.getMaxCountingQuestions())
+                                        .maxPoints(acc.getMaxPoints() + curr.getMaxPoints())
+                                        .questions(acc.getQuestions() + curr.getQuestions())
+                                        .points(acc.getPoints() + curr.getPoints())
+                                        .build();
+                            })
+                            .map(sub -> {
+                                return DimensionResults.builder()
+                                        .id(dimensionData.getId())
+                                        .maxQuestions(sub.getMaxQuestions())
+                                        .maxCountingQuestions(sub.getMaxCountingQuestions())
+                                        .maxPoints(sub.getMaxPoints())
+                                        .minimumRequiredQuestions(sub.getMaxQuestions() * 0.7f)
+                                        .questions(sub.getQuestions())
+                                        .points(sub.getPoints())
+                                        .subdimensionResults(subdimensionResults.stream()
+                                                .collect(Collectors.toMap(sd -> sd.getId().getNumber(), sd -> sd)))
+                                        .build();
+                            })
+                            .get();
+
+                    return ds;
+                })
+                .collect(Collectors.toList());
+
+        return dimensionResults.stream()
+                .reduce((acc, curr) -> {
+                    return DimensionResults.builder()
+                            .maxQuestions(acc.getMaxQuestions() + curr.getMaxQuestions())
+                            .maxCountingQuestions(acc.getMaxCountingQuestions() + curr.getMaxCountingQuestions())
+                            .maxPoints(acc.getMaxPoints() + curr.getMaxPoints())
+                            .questions(acc.getQuestions() + curr.getQuestions())
+                            .points(acc.getPoints() + curr.getPoints())
+                            .build();
+                })
+                .map(d -> QuestionnaireResults.builder()
+                        .dimensionResults(dimensionResults.stream()
+                                .collect(Collectors.toMap(dr -> dr.getId().getNumber(), dr -> dr)))
+                        .maxPoints(d.getMaxPoints())
+                        .maxQuestions(d.getMaxQuestions())
+                        .maxCountingQuestions(d.getMaxCountingQuestions())
+                        .minimumRequiredQuestions(d.getMaxQuestions() * 0.7f)
+                        .questions(d.getQuestions())
+                        .points(d.getPoints())
+                        .institutionName(user.getCampus().getName())
+                        .institutionType(user.getCampus().getType())
+                        .internship(user.getCampus().getInternship())
+                        .initialEducation(user.getCampus().getInitialEducation())
+                        .preschool(user.getCampus().getPreschool())
+                        .basic(user.getCampus().getBasic())
+                        .secondary(user.getCampus().getSecondary())
+                        .highSchool(user.getCampus().getHighSchool())
+                        .build())
+                .orElse(QuestionnaireResults.builder().build());
     }
 
     @Data

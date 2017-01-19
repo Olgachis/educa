@@ -34,6 +34,12 @@ public class QuestionnaireEndpoint {
     }
 
     @GET
+    @Path("/prediction")
+    public QuestionnaireResults getPredictionResults() {
+        return evaluationService.listPrediction();
+    }
+
+    @GET
     @Path("/improvementPlan")
     public ImprovementPlan getImprovementPlan() {
         return evaluationService.getImprovementPlan();
