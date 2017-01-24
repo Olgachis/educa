@@ -241,7 +241,7 @@ public class EvaluationService {
         User user = userRepository.findByCampus(campus);
         QuestionnaireData data = dimensionService.listQualityModelDimensions(user, false);
         QuestionnaireResults results = listResults(user.getUsername());
-        int priorityYear = (int)Math.ceil((results.getMaxQuestions() - results.getMaxCountingQuestions()) / 4.0f);
+        int priorityYear = (int)Math.floor((results.getMaxQuestions() - results.getMaxCountingQuestions()) / 4.0d);
         List<ImprovementQuestion> questions = data.getDimensions().values().stream()
                 .sorted((d1, d2) -> {
                     return d1.getId().getSortOrder().compareTo(d2.getId().getSortOrder());
@@ -252,21 +252,26 @@ public class EvaluationService {
                                 return s1.getSortOrder().compareTo(s2.getSortOrder());
                             })
                             .flatMap((subdimension) -> {
-                                double maxPoints = subdimension.getQuestions().stream()
-                                        .mapToDouble(Question::getPriority)
+                                int maxPoints = subdimension.getQuestions().stream()
+                                        .mapToInt(Question::getPriority)
                                         .sum();
-                                double points = subdimension.getQuestions().stream()
+                                int points = subdimension.getQuestions().stream()
                                         .filter(Question::isValuable)
-                                        .mapToDouble(Question::getPriority)
+                                        .mapToInt(Question::getPriority)
                                         .sum();
-                                double maxQuestions = subdimension.getQuestions().stream()
-                                        .mapToDouble(q -> 1)
+                                int maxQuestions = subdimension.getQuestions().stream()
+                                        .mapToInt(q -> 1)
                                         .sum();
-                                double answeredQuestions = subdimension.getQuestions().stream()
+                                int answeredQuestions = subdimension.getQuestions().stream()
                                         .filter(Question::isValuable)
-                                        .mapToDouble(q -> 1)
+                                        .mapToInt(q -> 1)
                                         .sum();
-                                double weight = (maxQuestions - answeredQuestions) / (points - maxPoints);
+                                final int weight;
+                                if(maxQuestions != answeredQuestions) {
+                                    weight = maxPoints - points;
+                                } else {
+                                    weight = -1;
+                                }
                                 return subdimension.getQuestions().stream()
                                         .filter(q -> !q.isValuable())
                                         .map((question) -> {
@@ -288,14 +293,16 @@ public class EvaluationService {
 
         questions = questions.stream()
                 .sorted((q1, q2) -> {
-                    return (-q1.getPriority() * 100000 - (int)(q1.getSubdimensionWeights() * 100)) - (-q2.getPriority() * 100000 - (int)(q1.getSubdimensionWeights() * 100));
+                    return (q2.getPriority() * 1000 + q2.getSubdimensionWeights() * 100) -
+                           (q1.getPriority() * 1000 + q1.getSubdimensionWeights() * 100);
                 })
                 .collect(Collectors.toList());
 
 
         questionData.stream()
                 .sorted((q1, q2) -> {
-                    return (-q1.getPriority()) - (-q2.getPriority());
+                    return (q2.getPriority() * 1000 + q2.getSubdimensionWeights() * 100) -
+                            (q1.getPriority() * 1000 + q1.getSubdimensionWeights() * 100);
                 })
                 .limit(priorityYear)
                 .forEach(q -> {

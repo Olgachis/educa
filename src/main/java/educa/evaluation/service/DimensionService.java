@@ -172,7 +172,6 @@ public class DimensionService {
                                 }
 
                                 List<Question> questions = dbQuestions.getQuestions().stream()
-                                        .sorted((q1, q2) -> q1.getSortOrder().compareTo(q2.getSortOrder()))
                                         .map(q -> {
                                             String response = findResponse(sectionResponse, q.getId());
                                             boolean valuable = "true".equals(response) || Optional.ofNullable(q.getOptions())

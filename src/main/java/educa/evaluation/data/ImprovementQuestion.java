@@ -14,7 +14,7 @@ public class ImprovementQuestion {
 
     private int priority;
 
-    private double subdimensionWeights;
+    private int subdimensionWeights;
 
     private Integer campusPriority;
 
