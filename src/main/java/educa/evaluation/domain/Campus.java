@@ -24,6 +24,8 @@ public class Campus extends BaseModel {
     @NotBlank
     private String type;
 
+    private Boolean openQuestionnaire;
+
     private Boolean internship;
 
     private Boolean initialEducation;

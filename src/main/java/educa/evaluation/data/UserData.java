@@ -8,5 +8,6 @@ public class UserData {
     private final String institution;
     private final String username;
     private final String role;
+    private final boolean openQuestionnaire;
 
 }

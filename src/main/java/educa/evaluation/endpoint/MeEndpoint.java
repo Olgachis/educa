@@ -32,7 +32,11 @@ public class MeEndpoint {
         if(user == null) {
             return null;
         }
-        return new UserData(institutionName, user.getUsername(), user.getRole().getId());
+        boolean openQuestionnaire = Optional.ofNullable(user)
+                .map(User::getCampus)
+                .map(Campus::getOpenQuestionnaire)
+                .orElse(false);
+        return new UserData(institutionName, user.getUsername(), user.getRole().getId(), openQuestionnaire);
     }
 
 }
