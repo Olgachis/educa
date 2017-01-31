@@ -11,6 +11,7 @@ public class QuestionnaireResults {
 
     private Map<String, DimensionResults> dimensionResults;
 
+    private String institutionId;
     private String institutionName;
     private String institutionType;
 
@@ -30,5 +31,7 @@ public class QuestionnaireResults {
 
     private int totalAnswered;
     private int total;
+
+    private boolean openQuestionnaire;
 
 }

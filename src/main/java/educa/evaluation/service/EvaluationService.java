@@ -14,6 +14,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.*;
@@ -22,6 +23,7 @@ import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
+@Transactional
 public class EvaluationService {
 
     @Autowired
@@ -210,6 +212,8 @@ public class EvaluationService {
                         .minimumRequiredQuestions(d.getMaxQuestions() * 0.7f)
                         .questions(d.getQuestions())
                         .points(d.getPoints())
+                        .openQuestionnaire(user.getCampus().getOpenQuestionnaire())
+                        .institutionId(user.getCampus().getId())
                         .institutionName(user.getCampus().getName())
                         .institutionType(user.getCampus().getType())
                         .internship(user.getCampus().getInternship())
@@ -459,6 +463,8 @@ public class EvaluationService {
                         .minimumRequiredQuestions(d.getMaxQuestions() * 0.7f)
                         .questions(d.getQuestions())
                         .points(d.getPoints())
+                        .openQuestionnaire(user.getCampus().getOpenQuestionnaire())
+                        .institutionId(user.getCampus().getId())
                         .institutionName(user.getCampus().getName())
                         .institutionType(user.getCampus().getType())
                         .internship(user.getCampus().getInternship())
@@ -469,6 +475,28 @@ public class EvaluationService {
                         .highSchool(user.getCampus().getHighSchool())
                         .build())
                 .orElse(QuestionnaireResults.builder().build());
+    }
+
+    public List<QuestionnaireResults> listQuestionnaires() {
+        return StreamSupport.stream(userRepository.findAllByRoleName("Institución").spliterator(), false)
+                .map(User::getUsername)
+                .map(this::listResults)
+                .sorted((c1, c2) -> c1.getInstitutionName().compareTo(c2.getInstitutionName()))
+                .collect(Collectors.toList());
+    }
+
+    public boolean closeQuestionnaire(String id) {
+        Campus campus = campusRepository.findOne(id);
+        campus.setOpenQuestionnaire(false);
+        campusRepository.save(campus);
+        return true;
+    }
+
+    public boolean openQuestionnaire(String id) {
+        Campus campus = campusRepository.findOne(id);
+        campus.setOpenQuestionnaire(true);
+        campusRepository.save(campus);
+        return true;
     }
 
     @Data

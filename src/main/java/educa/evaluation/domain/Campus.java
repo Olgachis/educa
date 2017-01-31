@@ -18,7 +18,6 @@ public class Campus extends BaseModel {
     @NotBlank
     private String name;
 
-    @NotBlank
     private String campusName;
 
     @NotBlank
