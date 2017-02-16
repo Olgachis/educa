@@ -1,9 +1,6 @@
 package educa.evaluation.config;
 
-import educa.evaluation.endpoint.MeEndpoint;
-import educa.evaluation.endpoint.PasswordEndpoint;
-import educa.evaluation.endpoint.QuestionnaireEndpoint;
-import educa.evaluation.endpoint.SummaryEndpoint;
+import educa.evaluation.endpoint.*;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,6 +15,7 @@ public class JerseyConfig extends ResourceConfig {
         register(MeEndpoint.class);
         register(PasswordEndpoint.class);
         register(QuestionnaireEndpoint.class);
+        register(SimpleQuestionnaireEndpoint.class);
     }
 
 }
