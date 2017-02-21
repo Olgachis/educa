@@ -42,7 +42,7 @@ public class QuestionnaireEndpoint {
     @GET
     @Path("/improvementPlan")
     public ImprovementPlan getImprovementPlan() {
-        return evaluationService.getImprovementPlan();
+        return evaluationService.getImprovementPlan(true);
     }
 
     @POST

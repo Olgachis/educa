@@ -122,6 +122,15 @@ public class DimensionService {
         return null;
     }
 
+    public Map<String, Boolean> showCampusRelevant(Campus campus) {
+        Questionnaire questionnaire = questionnaireRepository.findOne(types.get(campus.getType()));
+
+        return questionnaire.getSections().stream()
+          .collect(
+            Collectors.toMap(s -> s.getDimensionId() + ":" + s.getSubdimensionId(), Section::getCampusRelevant)
+          );
+    }
+
     public QuestionnaireData listQualityModelDimensions(User user, boolean filterCampus) {
         Campus campus = user.getCampus();
         Questionnaire questionnaire = questionnaireRepository.findOne(types.get(campus.getType()));

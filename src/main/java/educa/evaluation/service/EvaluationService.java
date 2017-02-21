@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -226,19 +227,53 @@ public class EvaluationService {
                 .orElse(QuestionnaireResults.builder().build());
     }
 
-    public ImprovementPlan getImprovementPlan() {
-        return getImprovementPlan(securityService.getCurrentUser().getCampus().getId());
+    public ImprovementPlan getImprovementPlan(boolean filerResults) {
+        return getImprovementPlan(securityService.getCurrentUser().getCampus().getId(), filerResults);
     }
 
-    public ImprovementPlan getImprovementPlan(String institutionId) {
+    public ImprovementPlan getImprovementPlan(String institutionId, boolean filterResults) {
         Campus campus = campusRepository.findOne(institutionId);
+        Campus primaryCampus = campusRepository.findByInstitutionAndPrimaryCampus(campus.getInstitution(), true);
         QuestionnaireResponse response = questionnaireResponseRepository.findByCampus(campus);
+        QuestionnaireResponse primaryResponse = questionnaireResponseRepository.findByCampus(primaryCampus);
 
-        return Optional.ofNullable(response)
+        ImprovementPlan plan = Optional.ofNullable(response)
                 .map(this::mapQuestionnaire)
                 .orElseGet(() -> {
                     return getDefaultMap(campus);
                 });
+
+        ImprovementPlan primaryPlan = Optional.ofNullable(response)
+                .map(this::mapQuestionnaire)
+                .orElseGet(() -> {
+                    return getDefaultMap(campus);
+                });
+
+        Map<String, Boolean> showCampusRelevant = dimensionService.showCampusRelevant(campus);
+        Map<String, ImprovementQuestion> primaryQuestions = plan.getQuestions().stream()
+                .collect(Collectors.toMap(ImprovementQuestion::getId, Function.identity()));
+
+        plan.setQuestions(plan.getQuestions().stream()
+          .filter(q -> {
+            String id = q.getDimensionId().getNumber() + ":" + q.getSubdimensionId().getNumber();
+            if(filterResults) {
+              return campus.getPrimaryCampus() || showCampusRelevant.get(id);
+            } else {
+              return true;
+            }
+          })
+          .map(q -> {
+            String id = q.getDimensionId().getNumber() + ":" + q.getSubdimensionId().getNumber();
+            if(showCampusRelevant.get(id)) {
+              return q;
+            } else {
+              return primaryQuestions.get(q.getId());
+            }
+          })
+          .collect(Collectors.toList())
+        );
+
+        return plan;
     }
 
     private ImprovementPlan getDefaultMap(Campus campus) {
@@ -348,7 +383,7 @@ public class EvaluationService {
 
     private QuestionnaireResults listPrediction(String username) {
         User user = userRepository.findByUsername(username);
-        ImprovementPlan improvementPlan = getImprovementPlan(user.getCampus().getId());
+        ImprovementPlan improvementPlan = getImprovementPlan(user.getCampus().getId(), false);
         QuestionnaireData questionnaireData = dimensionService.listQualityModelDimensions(user, false);
 
         Map<String, Boolean> plannedResults = improvementPlan.getQuestions().stream()
