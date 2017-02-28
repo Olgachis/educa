@@ -14,6 +14,7 @@ public class QuestionnaireResults {
     private String institutionId;
     private String institutionName;
     private String institutionType;
+    private String institutionLevel;
 
     private boolean internship;
     private boolean initialEducation;

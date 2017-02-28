@@ -1,7 +1,9 @@
 package educa.evaluation.endpoint;
 
+import educa.evaluation.data.CampusData;
 import educa.evaluation.data.QuestionnaireResults;
 import educa.evaluation.service.EvaluationService;
+import educa.evaluation.service.InstitutionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,10 +21,20 @@ public class SummaryEndpoint {
     @Autowired
     private EvaluationService evaluationService;
 
+    @Autowired
+    private InstitutionService institutionService;
+
+
     @GET
     @Path("/list")
     public List<QuestionnaireResults> listResults() {
         return evaluationService.listQuestionnaires();
+    }
+
+    @GET
+    @Path("/listCampuses")
+    public List<CampusData> listCampuses() {
+        return institutionService.listCampuses();
     }
 
     @GET

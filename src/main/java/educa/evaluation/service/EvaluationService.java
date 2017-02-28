@@ -217,6 +217,7 @@ public class EvaluationService {
                         .institutionId(user.getCampus().getId())
                         .institutionName(user.getCampus().getName())
                         .institutionType(user.getCampus().getType())
+                        .institutionLevel(buildLevel(user.getCampus()))
                         .internship(user.getCampus().getInternship())
                         .initialEducation(user.getCampus().getInitialEducation())
                         .preschool(user.getCampus().getPreschool())
@@ -225,6 +226,29 @@ public class EvaluationService {
                         .highSchool(user.getCampus().getHighSchool())
                         .build())
                 .orElse(QuestionnaireResults.builder().build());
+    }
+
+    private String buildLevel(Campus campus) {
+        StringBuilder builder = new StringBuilder();
+        if(campus.getInitialEducation()) {
+            builder.append("(Educación inicial) ");
+        }
+        if(campus.getInternship()) {
+            builder.append("(Internado) ");
+        }
+        if(campus.getPreschool()) {
+            builder.append("(Preescolar) ");
+        }
+        if(campus.getBasic()) {
+            builder.append("(Primaria) ");
+        }
+        if(campus.getSecondary()) {
+            builder.append("(Secundaria) ");
+        }
+        if(campus.getHighSchool()) {
+            builder.append("(Preparatoria) ");
+        }
+        return builder.toString().trim();
     }
 
     public ImprovementPlan getImprovementPlan(boolean filerResults) {
