@@ -2,4 +2,6 @@ build
 *.iws
 *.ipr
 *.iml
-
+.gradle/
+.idea/
+.java-version
