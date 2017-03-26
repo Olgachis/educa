@@ -96,6 +96,24 @@ public class SimpleQuestionnaireService {
                 .build();
     }
 
+    public QuestionnaireResponses listFullResponses(String id) {
+        Gson gson = new Gson();
+        List<SimpleQuestionnaireResponse> responses = simpleResponseRepository.findAllResponsesByQuestionnaireId(id)
+                .stream()
+                .sorted((r1, r2) -> r1.getDateCreated().compareTo(r2.getDateCreated()))
+                .map(r -> {
+                    SimpleQuestionnaireResponse response = new SimpleQuestionnaireResponse();
+                    response.setData(gson.fromJson(r.getSimpleResponse(), Map.class));
+                    response.setId(r.getId());
+                    response.setTitle(r.getTitle());
+                    return response;
+                })
+                .collect(Collectors.toList());
+        return QuestionnaireResponses.builder()
+                .responses(responses)
+                .build();
+    }
+
     public SimpleQuestionnaireResponse getResponse(String id) {
         Gson gson = new Gson();
         SimpleResponse response = simpleResponseRepository.findOne(id);
