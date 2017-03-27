@@ -78,9 +78,61 @@ public class ExportService {
             })
             .map(q -> {
                 Map<String, Object> question = (Map<String, Object>) q;
+              //TODO Preguntar que tipo de respuesta es
+
+                StringBuilder stringBuilder = new StringBuilder();
+                if(question.get("type").equals("options")){
+                  stringBuilder.append(buildOptionResponse(question));
+                  return stringBuilder.toString();
+                }
+
+                if(question.get("type").equals("multioptions") ){
+
+                  List<Object> options = (List<Object>) question.get("options");
+                  options
+                    .stream()
+                    .forEach(o -> {
+                      Map<String, Object> response = (Map<String, Object>) o;
+
+                      stringBuilder.append(buildMultivalueResponse(response));
+
+                    });
+                  return stringBuilder.toString();
+                }
                 return (String) question.get("value");
             })
             .collect(Collectors.joining("|"));
     }
 
+    private String buildMultivalueResponse(Map<String, Object> response){
+      StringBuilder stringBuilder = new StringBuilder();
+      if(response.get("value") != null ){
+        stringBuilder.append((String)response.get("name"));
+        if(response.get("other") != null){
+          stringBuilder.append(": ");
+          stringBuilder.append((String)response.get("otherValue"));
+
+        }
+        stringBuilder.append(",");
+      }
+      return stringBuilder.toString();
+    }
+
+  private String buildOptionResponse( Map<String, Object> question){
+
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append((String) question.get("value"));
+    List<Object> options = (List<Object>) question.get("options");
+    options
+      .stream()
+      .forEach(o -> {
+        Map<String, Object> response = (Map<String, Object>) o;
+        if(response.get("other") != null){
+          stringBuilder.append(" : ");
+          stringBuilder.append((String)response.get("otherValue"));
+        }
+      });
+
+    return stringBuilder.toString();
+  }
 }
