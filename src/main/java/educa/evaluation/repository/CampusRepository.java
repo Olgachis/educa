@@ -10,4 +10,6 @@ public interface CampusRepository extends PagingAndSortingRepository<Campus, Str
     Campus findByInstitutionAndPrimaryCampus(Institution institution, boolean primaryCampus);
 
     List<Campus> findAllByInstitution(Institution institution);
+
+    List<Campus> findAllByPrimaryCampus(Boolean primaryCampus);
 }

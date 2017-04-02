@@ -536,6 +536,7 @@ public class EvaluationService {
                 .orElse(QuestionnaireResults.builder().build());
     }
 
+    //Como mando llamar este metodo desde mi InstitutionService.listPrimaryCampuses
     public List<QuestionnaireResults> listQuestionnaires() {
         return StreamSupport.stream(userRepository.findAllByRoleName("Institución").spliterator(), false)
                 .map(User::getUsername)

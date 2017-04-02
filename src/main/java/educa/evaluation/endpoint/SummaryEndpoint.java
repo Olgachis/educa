@@ -38,6 +38,12 @@ public class SummaryEndpoint {
     }
 
     @GET
+    @Path("/listPrimaryCampuses")
+    public List<CampusData> listPrimaryCampuses() {
+        return institutionService.listPrimaryCampuses();
+    }
+
+    @GET
     @Path("/open/{id}")
     public boolean openQuestionnaire(@PathParam("id") String id) {
         return evaluationService.openQuestionnaire(id);

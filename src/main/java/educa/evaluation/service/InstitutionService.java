@@ -21,9 +21,28 @@ public class InstitutionService {
     @Autowired
     private CampusRepository campusRepository;
 
+    @Autowired
+    private EvaluationService evaluationService;
+
     public List<CampusData> listCampuses() {
         User user = securityService.getCurrentUser();
         return listCampuses(user);
+    }
+
+    //Servicio para lista de campus
+    public List<CampusData> listPrimaryCampuses() {
+        return campusRepository.findAllByPrimaryCampus(new Boolean(true))
+                .stream()
+                .map(i -> {
+                    return CampusData.builder()
+                            .id(i.getId())
+                            .name(i.getName())
+                            .primary(i.getPrimaryCampus())
+                            .campusType(buildType(i))
+                            .questionnaireResults(evaluationService(i))
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     private List<CampusData> listCampuses(User user) {

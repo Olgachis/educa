@@ -225,6 +225,94 @@ public class DimensionService {
         return listQualityModelDimensions(securityService.getCurrentUser(), filterCampus);
     }
 
+    public QuestionnaireData listQualityModelDimensionsByCampus(Campus campus){
+
+      Questionnaire questionnaire = questionnaireRepository.findOne(types.get(campus.getType()));
+
+      final Campus primaryCampus;
+      final User primaryUser;
+
+      if(!campus.getPrimaryCampus()) {
+        primaryCampus = campusRepository.findByInstitutionAndPrimaryCampus(campus.getInstitution(), true);
+        primaryUser = userRepository.findByCampus(primaryCampus);
+      } else {
+        primaryCampus = null;
+        primaryUser = null;
+      }
+
+      List<String> dimensionNames = questionnaire.getSections().stream()
+        .sorted((s1, s2) -> Integer.parseInt(s1.getDimensionId()) - Integer.parseInt(s2.getDimensionId()))
+        .map(Section::getDimension)
+        .distinct()
+        .collect(Collectors.toList());
+
+
+      Map<String, DimensionData> dimensions = questionnaire.getSections().stream()
+        .filter(section -> {
+          if(filterCampus) {
+            return campus.getPrimaryCampus() || section.getCampusRelevant();
+          } else {
+            return true;
+          }
+        })
+        .collect(Collectors.groupingBy(section -> {
+          return new DimensionData.DimensionDataId(section.getDimensionId(), section.getDimension(), dimensionNames.indexOf(section.getDimension()));
+        }))
+        .entrySet()
+        .stream()
+        .map(entry -> {
+          Map<String, SubDimensionData> subdimensions = entry.getValue().stream()
+            //.filter(s -> checkElegibility(user, s))
+            .sorted()
+            .map(section -> {
+              DbQuestions dbQuestions = gson.fromJson(section.getQuestionJson(), DbQuestions.class);
+              final SectionResponse sectionResponse;
+
+              if(!campus.getPrimaryCampus() && !section.getCampusRelevant()) {
+                sectionResponse = sectionResponseRepository.findByUserAndSection(primaryUser, section);
+              }
+
+              List<Question> questions = dbQuestions.getQuestions().stream()
+                .map(q -> {
+                  String response = findResponse(sectionResponse, q.getId());
+                  boolean valuable = "true".equals(response) || Optional.ofNullable(q.getOptions())
+                    .map(options -> {
+                      return options.stream()
+                        .filter(OptionData::isValuable)
+                        .map(OptionData::getName)
+                        .collect(Collectors.toList())
+                        .contains(response);
+                    })
+                    .orElse(false);
+                  return new Question(q.getId(), "checkbox", q.getQuestion(), response, valuable, q.getOptions(), q.getPriority());
+                })
+                .collect(Collectors.toList());
+
+              return new SubDimensionData(
+                new DimensionData.DimensionDataId(section.getSubdimensionId(), section.getSubdimension(), dimensionNames.indexOf(section.getDimension())),
+                questions,
+                Optional.ofNullable(sectionResponse).map(SectionResponse::getComments).orElse(null),
+                section.getSortOrder()
+              );
+            })
+            .collect(Collectors.toMap(s -> s.getId().getNumber(), s-> s));
+          return new DimensionData(entry.getKey(), subdimensions);
+        })
+        .collect(Collectors.toMap(d -> d.getId().getNumber(), d -> d));
+
+      return QuestionnaireData.builder()
+        .dimensions(dimensions)
+        .institutionName(campus.getName())
+        .institutionType(campus.getType())
+        .internship(campus.getInternship())
+        .initialEducation(campus.getInitialEducation())
+        .preschool(campus.getPreschool())
+        .basic(campus.getBasic())
+        .secondary(campus.getSecondary())
+        .highSchool(campus.getHighSchool())
+        .build();
+    }
+
     private String findResponse(SectionResponse sectionResponse, String id) {
         if(sectionResponse == null) {
             return null;
