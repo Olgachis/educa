@@ -14,4 +14,5 @@ public class CampusData {
     private boolean primary;
     private boolean hasChildren;
     private QuestionnaireResults questionnaireResults;
+    private List<CampusData> innerCampus;
 }
