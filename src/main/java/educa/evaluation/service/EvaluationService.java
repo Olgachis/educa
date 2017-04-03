@@ -228,6 +228,7 @@ public class EvaluationService {
                 .orElse(QuestionnaireResults.builder().build());
     }
 
+
     private String buildLevel(Campus campus) {
         StringBuilder builder = new StringBuilder();
         if(campus.getInitialEducation()) {
@@ -536,13 +537,18 @@ public class EvaluationService {
                 .orElse(QuestionnaireResults.builder().build());
     }
 
-    //Como mando llamar este metodo desde mi InstitutionService.listPrimaryCampuses
+    
     public List<QuestionnaireResults> listQuestionnaires() {
         return StreamSupport.stream(userRepository.findAllByRoleName("Institución").spliterator(), false)
                 .map(User::getUsername)
                 .map(this::listResults)
                 .sorted((c1, c2) -> c1.getInstitutionName().compareTo(c2.getInstitutionName()))
                 .collect(Collectors.toList());
+    }
+
+    public QuestionnaireResults getResultsByCampus(Campus campus){
+      User user =  userRepository.findByRoleNameAndCampus("Institución", campus);
+      return listResults(user.getUsername());
     }
 
     public boolean closeQuestionnaire(String id) {

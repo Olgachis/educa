@@ -34,12 +34,14 @@ public class InstitutionService {
         return campusRepository.findAllByPrimaryCampus(new Boolean(true))
                 .stream()
                 .map(i -> {
+
                     return CampusData.builder()
                             .id(i.getId())
                             .name(i.getName())
                             .primary(i.getPrimaryCampus())
+                            .internship(i.getInternship())
                             .campusType(buildType(i))
-                            .questionnaireResults(evaluationService(i))
+                            .questionnaireResults(evaluationService.getResultsByCampus(i))
                             .build();
                 })
                 .collect(Collectors.toList());

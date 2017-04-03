@@ -3,6 +3,8 @@ package educa.evaluation.data;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 public class CampusData {
@@ -10,5 +12,6 @@ public class CampusData {
     private String name;
     private String campusType;
     private boolean primary;
+    private boolean internship;
     private QuestionnaireResults questionnaireResults;
 }
