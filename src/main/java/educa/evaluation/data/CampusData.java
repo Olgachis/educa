@@ -12,6 +12,6 @@ public class CampusData {
     private String name;
     private String campusType;
     private boolean primary;
-    private boolean internship;
+    private boolean hasChildren;
     private QuestionnaireResults questionnaireResults;
 }

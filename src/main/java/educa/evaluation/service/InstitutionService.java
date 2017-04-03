@@ -29,17 +29,17 @@ public class InstitutionService {
         return listCampuses(user);
     }
 
-    //Servicio para lista de campus
+    //Servicio para lista de campus que son primary
     public List<CampusData> listPrimaryCampuses() {
         return campusRepository.findAllByPrimaryCampus(new Boolean(true))
                 .stream()
                 .map(i -> {
-
                     return CampusData.builder()
                             .id(i.getId())
                             .name(i.getName())
                             .primary(i.getPrimaryCampus())
-                            .internship(i.getInternship())
+                            //Marcar el campues como que tiene instituciones
+                            .hasChildren(true)
                             .campusType(buildType(i))
                             .questionnaireResults(evaluationService.getResultsByCampus(i))
                             .build();
