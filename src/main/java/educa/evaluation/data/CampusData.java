@@ -12,7 +12,6 @@ public class CampusData {
     private String name;
     private String campusType;
     private boolean primary;
-    private boolean hasChildren;
     private QuestionnaireResults questionnaireResults;
     private List<CampusData> innerCampus;
 }

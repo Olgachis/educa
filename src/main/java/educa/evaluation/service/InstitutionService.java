@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,37 +30,40 @@ public class InstitutionService {
         return listCampuses(user);
     }
 
-    //Servicio para lista de campus que son primary
+    //Servicio para lista de campus
     public List<CampusData> listPrimaryCampuses() {
-
         return campusRepository.findAllByPrimaryCampus(new Boolean(true))
                 .stream()
-                .map(this::buildCampus)
+                .map(i -> {
+                    return CampusData.builder()
+                            .id(i.getId())
+                            .name(i.getName())
+                            .primary(i.getPrimaryCampus())
+                            .campusType(buildType(i))
+                            .questionnaireResults(evaluationService.getResultsByCampus(i))
+                            .innerCampus(buildInnerCampus(i))
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
-    private CampusData buildCampus(Campus campus){
-      this.buildInnerCampus(campus);
-      return CampusData.builder()
-              .id(campus.getId())
-              .name(campus.getName())
-              .primary(campus.getPrimaryCampus())
-              .campusType(buildType(campus))
-              .questionnaireResults(evaluationService.getResultsByCampus(campus))
-              .innerCampus(buildInnerCampus(campus))
-              .build();
-    }
-
-    private void buildInnerCampus(Campus campus){
-      List<CampusData> campusData;
-      List<Campus> campusList = campusRepository.findAllByInstitutionAndPrimaryCampus(campus.getInstitution(), false);
-      if(campusList.size() > 0){
-        System.out.println("hola ");
-      }else{
-        System.out.println("muere ");
-      }
-
-
+    private List<CampusData> buildInnerCampus(Campus campus) {
+      List<Campus> innerCampusList = campusRepository.findAllByInstitutionAndPrimaryCampus(campus.getInstitution(), false);
+      if(innerCampusList.size() > 0 ){
+        return
+                innerCampusList.stream()
+                .map(i -> {
+                    return CampusData.builder()
+                            .id(i.getId())
+                            .name(i.getName())
+                            .primary(i.getPrimaryCampus())
+                            .campusType(buildType(i))
+                            .questionnaireResults(evaluationService.getResultsByCampus(i))
+                            .build();
+                })
+                .collect(Collectors.toList());
+              }
+              return null;
     }
 
     private List<CampusData> listCampuses(User user) {
