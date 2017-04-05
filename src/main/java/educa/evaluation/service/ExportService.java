@@ -20,10 +20,10 @@ public class ExportService {
     public String generateCsv(String id) {
         StringBuilder stringBuilder = new StringBuilder();
 
-        List<SimpleQuestionnaireResponse> responses = 
+        List<SimpleQuestionnaireResponse> responses =
             simpleQuestionnaireService.listFullResponses(id)
                 .getResponses();
-        
+
         if(responses.size() > 0) {
             stringBuilder.append(buildHeader(responses.get(0).getData()));
         }
@@ -53,73 +53,76 @@ public class ExportService {
             .append("|")
             .append(questions
                 .stream()
-                .sorted((q1, q2) -> {
-                    Map<String, Object> question1 = (Map<String, Object>) q1;
-                    Map<String, Object> question2 = (Map<String, Object>) q2;
-                    return ((String)question1.get("id")).compareTo((String)question2.get("id"));
-                })
                 .map(q -> {
                     Map<String, Object> question = (Map<String, Object>) q;
-                    return (String) question.get("displayName");
+                    String questionData;
+                    if(question.get("type").equals("multioptions")){
+                      questionData = buildMultivalueQuestion(question);
+                    }else{
+                      questionData = (String) question.get("displayName");
+                    }
+                    return questionData;
                 })
                 .collect(Collectors.joining("|")))
             .append("\n");
         return header.toString();
     }
 
+    private String buildMultivalueQuestion(Map<String, Object> question){
+      List<Object> options = (List<Object>) question.get("options");
+      String questionData = (String) question.get("displayName");
+      return options
+      .stream()
+      .map(o ->{
+        Map<String, Object> optionQuestion = (Map<String, Object>) o;
+        String option = (String) optionQuestion.get("name");
+        return questionData + ":" + option;
+      })
+      .collect(Collectors.joining("|"));
+    }
+
     private String buildResponses(Map<String, Object> data) {
         List<Object> questions = (List<Object>) data.get("questions");
         return questions
             .stream()
-            .sorted((q1, q2) -> {
-                Map<String, Object> question1 = (Map<String, Object>) q1;
-                Map<String, Object> question2 = (Map<String, Object>) q2;
-                return ((String)question1.get("id")).compareTo((String)question2.get("id"));
-            })
             .map(q -> {
                 Map<String, Object> question = (Map<String, Object>) q;
-              //TODO Preguntar que tipo de respuesta es
-
                 StringBuilder stringBuilder = new StringBuilder();
                 if(question.get("type").equals("options")){
                   stringBuilder.append(buildOptionResponse(question));
                   return stringBuilder.toString();
                 }
-
                 if(question.get("type").equals("multioptions") ){
-
-                  List<Object> options = (List<Object>) question.get("options");
-                  options
-                    .stream()
-                    .forEach(o -> {
-                      Map<String, Object> response = (Map<String, Object>) o;
-
-                      stringBuilder.append(buildMultivalueResponse(response));
-
-                    });
-                  return stringBuilder.toString();
+                  return (buildMultivalueResponse(question));
                 }
                 return (String) question.get("value");
             })
             .collect(Collectors.joining("|"));
     }
 
-    private String buildMultivalueResponse(Map<String, Object> response){
-      StringBuilder stringBuilder = new StringBuilder();
-      if(response.get("value") != null ){
-        stringBuilder.append((String)response.get("name"));
-        if(response.get("other") != null){
-          stringBuilder.append(": ");
-          stringBuilder.append((String)response.get("otherValue"));
-
-        }
-        stringBuilder.append(",");
-      }
-      return stringBuilder.toString();
+    private String buildMultivalueResponse(Map<String, Object> question){
+      List<Object> options = (List<Object>) question.get("options");
+      String questionData = (String) question.get("displayName");
+      StringBuilder responseBuilder = new StringBuilder();
+      return options
+      .stream()
+      .map(o ->{
+        Map<String, Object> option = (Map<String, Object>) o;
+          String selected;
+          if(option.get("value") != null){
+            selected = "seleccionada";
+            if(option.get("other") != null){
+              selected += (String) option.get("otherValue");
+            }
+          }else{
+            selected = "No seleccionada";
+          }
+        return selected;
+      })
+      .collect(Collectors.joining("|"));
     }
 
   private String buildOptionResponse( Map<String, Object> question){
-
     StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append((String) question.get("value"));
     List<Object> options = (List<Object>) question.get("options");
@@ -127,7 +130,7 @@ public class ExportService {
       .stream()
       .forEach(o -> {
         Map<String, Object> response = (Map<String, Object>) o;
-        if(response.get("other") != null){
+        if(question.get("value") != null && response.get("other") != null){
           stringBuilder.append(" : ");
           stringBuilder.append((String)response.get("otherValue"));
         }
