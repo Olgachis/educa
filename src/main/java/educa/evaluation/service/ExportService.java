@@ -30,7 +30,7 @@ public class ExportService {
                 .getResponses();
 
         if(responses.size() > 0) {
-            stringBuilder.append(buildHeader(responses.get(0).getData(), questionsOrder));
+            stringBuilder.append(buildHeader(responses.get(responses.size()-1).getData(), questionsOrder));
         }
 
         responses
@@ -101,31 +101,24 @@ public class ExportService {
             return displayName.equals(q);
           })
           .findFirst();
-          return responseToString(recoverQuestion.get());
+
+          System.out.println("recoverQuestion" + recoverQuestion);
+          if(recoverQuestion.isPresent()){
+            return responseToString(recoverQuestion.get());
+          }
+          return "";
       })
         .collect(Collectors.joining("|"));
-      /*
-        return questions
-            .stream()
-            .map(q -> {
-                Map<String, Object> question = (Map<String, Object>) q;
-                StringBuilder stringBuilder = new StringBuilder();
-                if(question.get("type").equals("options")){
-                  stringBuilder.append(buildOptionResponse(question));
-                  return stringBuilder.toString();
-                }
-                if(question.get("type").equals("multioptions") ){
-                  return (buildMultivalueResponse(question));
-                }
-                return (String) question.get("value");
-            })
-            .collect(Collectors.joining("|"));
-            */
     }
 
     private String responseToString(Object recoverQuestion){
       Map<String, Object> question = (Map<String, Object>) recoverQuestion;
       StringBuilder stringBuilder = new StringBuilder();
+
+      String questionData = (String) question.get("displayName");
+
+      System.out.println("questionData: " + questionData + " : " + question.get("type").toString());
+
       if(question.get("type").equals("options")){
         stringBuilder.append(buildOptionResponse(question));
         return stringBuilder.toString();
@@ -133,13 +126,22 @@ public class ExportService {
       if(question.get("type").equals("multioptions") ){
         return (buildMultivalueResponse(question));
       }
-      return (String) question.get("value");
+
+      String value = (String) question.get("value");
+      if(value != null){
+        value = value.replace("\n", "");
+      }else {
+        value = "n/d";
+      }
+
+      return value;
     }
 
     private String buildMultivalueResponse(Map<String, Object> question){
       List<Object> options = (List<Object>) question.get("options");
       String questionData = (String) question.get("displayName");
       StringBuilder responseBuilder = new StringBuilder();
+
       return options
       .stream()
       .map(o ->{
