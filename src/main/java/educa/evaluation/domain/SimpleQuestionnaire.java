@@ -21,6 +21,14 @@ public class SimpleQuestionnaire extends BaseModel {
     @NotBlank
     private String title;
 
+    private boolean active;
+
+    private String client;
+
+    private Program program;
+
+    private SchoolGrade schoolGrade;
+
     @Lob
     @NotBlank
     @Type(type = "org.hibernate.type.TextType")
