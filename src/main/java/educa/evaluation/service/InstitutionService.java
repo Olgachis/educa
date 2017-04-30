@@ -37,7 +37,7 @@ public class InstitutionService {
                 .map(i -> {
                     return CampusData.builder()
                             .id(i.getId())
-                            .name(i.getCampusName() + " (global)")
+                            .name(i.getName() + " (global)")
                             .primary(i.getPrimaryCampus())
                             .campusType(buildType(i))
                             .questionnaireResults(evaluationService.getAverageByCampus(i))
