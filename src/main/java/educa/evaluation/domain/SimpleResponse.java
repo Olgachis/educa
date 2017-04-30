@@ -18,9 +18,12 @@ public class SimpleResponse extends BaseModel {
     @NotNull
     private String title;
 
-    @NotNull
     @ManyToOne
     private SimpleQuestionnaire questionnaire;
+
+    @NotNull
+    @ManyToOne
+    private PublishedQuestionnaire publishedQuestionnaire;
 
     @Lob
     @NotBlank

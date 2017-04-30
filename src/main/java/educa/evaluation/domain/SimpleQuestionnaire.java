@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Entity;
 import javax.persistence.Lob;
+import javax.persistence.OneToOne;
 
 @Data
 @Entity
@@ -20,6 +21,17 @@ public class SimpleQuestionnaire extends BaseModel {
 
     @NotBlank
     private String title;
+
+    private boolean active;
+
+    private String client;
+
+    @OneToOne(mappedBy = "program")
+    private Program program;
+
+    private SchoolGrade schoolGrade;
+
+    private Integer grade;
 
     @Lob
     @NotBlank
