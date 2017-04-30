@@ -5,6 +5,7 @@ import educa.evaluation.data.*;
 import educa.evaluation.domain.Campus;
 import educa.evaluation.domain.QuestionnaireResponse;
 import educa.evaluation.domain.User;
+import educa.evaluation.domain.Institution;
 import educa.evaluation.repository.CampusRepository;
 import educa.evaluation.repository.QuestionnaireResponseRepository;
 import educa.evaluation.repository.SectionResponseRepository;
@@ -105,6 +106,71 @@ public class EvaluationService {
 
     public QuestionnaireResults listResults() {
         return listResults(securityService.getCurrentUser().getUsername());
+    }
+
+    public QuestionnaireResults listAverageResults(@NotNull String username) {
+        User user = userRepository.findByUsername(username);
+
+        Institution institution = user.getCampus().getInstitution();
+        List<Campus> campuses = campusRepository.findAllByInstitution(institution);
+
+        return campuses
+          .stream()
+          .map(this::getResultsByCampus)
+          .reduce((acc, curr) -> {
+            Map<String, DimensionResults> dimensionResults = new HashMap<>();
+            acc.getDimensionResults().keySet().stream().forEach(k -> {
+                DimensionResults d1 = acc.getDimensionResults().get(k);
+                DimensionResults d2 = curr.getDimensionResults().get(k);
+                DimensionResults dr = DimensionResults.builder()
+                  .id(d1.getId())
+                  .maxQuestions(d1.getMaxQuestions() + d2.getMaxQuestions())
+                  .maxPoints(d1.getMaxPoints() + d2.getMaxPoints())
+                  .maxCountingQuestions(d1.getMaxCountingQuestions() + d2.getMaxCountingQuestions())
+                  .minimumRequiredQuestions(d1.getMinimumRequiredQuestions() + d2.getMinimumRequiredQuestions())
+                  .questions(d1.getQuestions() + d2.getQuestions())
+                  .points(d1.getPoints() + d2.getPoints())
+                  .sortOrder(d1.getSortOrder())
+                  .build();
+                dimensionResults.put(k, dr);
+            });
+            return QuestionnaireResults.builder()
+              .maxQuestions(acc.getMaxQuestions() + curr.getMaxQuestions())
+              .maxCountingQuestions(acc.getMaxCountingQuestions() + curr.getMaxCountingQuestions())
+              .maxPoints(acc.getMaxPoints() + curr.getMaxPoints())
+              .questions(acc.getQuestions() + curr.getQuestions())
+              .points(acc.getPoints() + curr.getPoints())
+              .dimensionResults(dimensionResults)
+              .build();
+          })
+          .map(qr -> {
+            qr.getDimensionResults()
+              .keySet()
+              .stream()
+              .forEach(k -> {
+                DimensionResults d1 = qr.getDimensionResults().get(k);
+                DimensionResults dr = DimensionResults.builder()
+                  .id(d1.getId())
+                  .maxQuestions(d1.getMaxQuestions() / campuses.size())
+                  .maxPoints(d1.getMaxPoints() / campuses.size())
+                  .maxCountingQuestions(d1.getMaxCountingQuestions() / campuses.size())
+                  .minimumRequiredQuestions(d1.getMinimumRequiredQuestions() / campuses.size())
+                  .questions(d1.getQuestions() / campuses.size())
+                  .points(d1.getPoints() / campuses.size())
+                  .sortOrder(d1.getSortOrder())
+                  .build();
+                qr.getDimensionResults().put(k, dr);
+              });
+            return QuestionnaireResults.builder()
+              .maxQuestions(qr.getMaxQuestions() / campuses.size())
+              .maxCountingQuestions(qr.getMaxCountingQuestions() / campuses.size())
+              .maxPoints(qr.getMaxPoints() / campuses.size())
+              .questions(qr.getQuestions() / campuses.size())
+              .points(qr.getPoints()  /campuses.size())
+              .dimensionResults(qr.getDimensionResults())
+              .build();
+          })
+          .orElse(QuestionnaireResults.builder().build());
     }
 
     public QuestionnaireResults listResults(@NotNull String username) {
@@ -544,6 +610,11 @@ public class EvaluationService {
                 .map(this::listResults)
                 .sorted((c1, c2) -> c1.getInstitutionName().compareTo(c2.getInstitutionName()))
                 .collect(Collectors.toList());
+    }
+
+    public QuestionnaireResults getAverageByCampus(Campus campus){
+      User user =  userRepository.findByRoleNameAndCampus("Institución", campus);
+      return listAverageResults(user.getUsername());
     }
 
     public QuestionnaireResults getResultsByCampus(Campus campus){

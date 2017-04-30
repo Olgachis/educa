@@ -32,15 +32,15 @@ public class InstitutionService {
 
     //Servicio para lista de campus
     public List<CampusData> listPrimaryCampuses() {
-        return campusRepository.findAllByPrimaryCampus(new Boolean(true))
+        return campusRepository.findAllByPrimaryCampus(true)
                 .stream()
                 .map(i -> {
                     return CampusData.builder()
                             .id(i.getId())
-                            .name(i.getName())
+                            .name(i.getCampusName() + " (global)")
                             .primary(i.getPrimaryCampus())
                             .campusType(buildType(i))
-                            .questionnaireResults(evaluationService.getResultsByCampus(i))
+                            .questionnaireResults(evaluationService.getAverageByCampus(i))
                             .innerCampus(buildInnerCampus(i))
                             .build();
                 })
@@ -48,7 +48,7 @@ public class InstitutionService {
     }
 
     private List<CampusData> buildInnerCampus(Campus campus) {
-      List<Campus> innerCampusList = campusRepository.findAllByInstitutionAndPrimaryCampus(campus.getInstitution(), false);
+      List<Campus> innerCampusList = campusRepository.findAllByInstitution(campus.getInstitution());
       if(innerCampusList.size() > 0 ){
         return
                 innerCampusList.stream()
