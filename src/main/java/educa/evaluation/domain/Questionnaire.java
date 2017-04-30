@@ -16,7 +16,6 @@ public class Questionnaire extends BaseModel {
     @NotBlank
     private String name;
 
-
     @OneToMany(mappedBy = "questionnaire")
     private List<Section> sections;
 
