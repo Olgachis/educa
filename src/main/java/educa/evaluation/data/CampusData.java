@@ -11,6 +11,7 @@ public class CampusData {
     private String id;
     private String name;
     private String campusType;
+    private String campusName;
     private boolean primary;
     private QuestionnaireResults questionnaireResults;
     private List<CampusData> innerCampus;

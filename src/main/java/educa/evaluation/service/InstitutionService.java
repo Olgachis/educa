@@ -80,6 +80,8 @@ public class InstitutionService {
                 .collect(Collectors.toList());
     }
 
+
+
     private String buildType(Campus campus) {
         StringBuilder builder = new StringBuilder();
         if(campus.getInitialEducation()) {
