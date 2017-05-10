@@ -130,20 +130,36 @@ public class SimpleQuestionnaireService {
     public void create(SimpleQuestionnaireData data) throws ScriptException {
         Gson gson = new Gson();
         System.out.println("---- create ----");
-        System.out.println("---- data ----" + data.getId());
+
         SimpleQuestionnaire simpleQuestionnaire = Optional.ofNullable(data.getId())
                 .map(simpleQuestionnaireRepository::findOne)
                 .orElse(new SimpleQuestionnaire());
 
         if(simpleQuestionnaire.getId() == null){
-            simpleQuestionnaire.setTitle(generateTilte(data.getName()));
-            simpleQuestionnaire.setTitleFunc("title");
+            simpleQuestionnaire.setTitle(data.getName());
+            simpleQuestionnaire.setTitleFunc("response");
         }
 
-
-        simpleQuestionnaire.setQuestionsJson("{\"text\":\"A continuación responda cada una de las preguntas en relación al ahorro que lleva a cabo el niño en la cuenta de ahorro que abrió con el apoyo de Fundación EDUCA.\",\"questions\":[{\"id\":\"0parents-account_school_name\",\"displayName\":\"Nombre de la Escuela\",\"type\":\"text\"},{\"id\":\"1parents-account_school_name\",\"displayName\":\"Nombre de la Escuela\",\"type\":\"text\"},{\"id\":\"2parents-account_parent_name\",\"displayName\":\"Nombre del Padre\",\"type\":\"text\"},{\"id\":\"3parents-account_kid_name\",\"displayName\":\"Nombre del niño\",\"type\":\"text\"},{\"id\":\"4parents-account_grade\",\"displayName\":\"Grado:\",\"type\":\"text\"},{\"id\":\"5parents-account_group\",\"displayName\":\"Grupo:\",\"type\":\"text\"},{\"id\":\"6parents-account_bank_account\",\"displayName\":\" ¿Usted continúa usando su cuenta bancaria que abrió con apoyo de Fundación Educa? \",\"type\":\"options\",\"options\":[\"Sí\",\"No es lo que esperaba\",\"No me es útil\",\"No sé cómo utilizarla\",{\"name\":\"Otra: \",\"other\":true}]},{\"id\":\"7parents-account_how much _save\",\"displayName\":\"¿Cuánto ha ahorrado por mes desde que se abrió la cuenta? (Responda a partir de la fecha en que apertura la cuenta)\",\"type\":\"options\",\"options\":[\"Octubre\",\"Noviembre\",\"Diciembre\",\"Enero\",\"Febrero\"]},{\"id\":\"8parents-account_total_amount\",\"displayName\":\"¿Al día de hoy cual es el monto total ahorrado?\",\"type\":\"text\"},{\"id\":\"9parents-account_same_acount\",\"displayName\":\"¿La cuenta de ahorro que abrió tiene algún fin específico?\",\"type\":\"text\"},{\"id\":\"10parents-account_other_movements\",\"displayName\":\"¿Ha realizado algún movimiento en la cuenta además de los depósitos de ahorro?\",\"type\":\"options\",\"options\":[{\"name\":\"Sí, explique \",\"other\":true},\"no\"]},{\"id\":\"11parents-account_account_helped\",\"displayName\":\"¿El abrir una cuenta le ha ayudado a manejar mejor sus finanzas personales o de su familia? \",\"type\":\"options\",\"options\":[\"Sí\",\"No\",\"No lo sé\"]},{\"id\":\"12arents-account_account_comment\",\"displayName\":\"Comentarios\",\"type\":\"text\"}]}");
-        System.out.println("---- simpleQuestionnaire ----" + simpleQuestionnaire);
+        if(data.getQuestionnaire() != null){
+            simpleQuestionnaire.setQuestionsJson(gson.toJson(data.getQuestionnaire()));
+        }
         simpleQuestionnaire = simpleQuestionnaireRepository.save(simpleQuestionnaire);
+        data.setId(simpleQuestionnaire.getId());
+        System.out.println("---- simpleQuestionnaire ----" + simpleQuestionnaire);
+    }
+
+    public SimpleQuestionnaireData getQuestionnaireById(String questionnaireId) throws Exception{
+        Gson gson = new Gson();
+
+        SimpleQuestionnaire simpleQuestionnaire = Optional.ofNullable(questionnaireId)
+                .map(simpleQuestionnaireRepository::findOne)
+                .orElseThrow(Exception::new);
+
+        SimpleQuestionnaireData simpleQuestionnaireData = new SimpleQuestionnaireData();
+        simpleQuestionnaireData.setId(simpleQuestionnaire.getId());
+        simpleQuestionnaireData.setName(simpleQuestionnaire.getTitle());
+        simpleQuestionnaireData.setQuestionnaire(gson.fromJson(simpleQuestionnaire.getQuestionsJson(), Map.class));
+        return simpleQuestionnaireData;
     }
 
     private String generateTilte(String simpleQuestionnaireName){

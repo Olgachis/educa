@@ -24,8 +24,15 @@ public class SimpleQuestionnairesEndpoint {
 
     @POST
     public SimpleQuestionnaireData createQuestionnaire(SimpleQuestionnaireData data) throws Exception {
-
         simpleQuestionnaireService.create(data);
         return data;
     }
+
+
+    @GET
+    @Path("/getQuestionnaire/{questionnaireId}")
+    public SimpleQuestionnaireData getQuestionnaire(@PathParam("questionnaireId") String questionnaireId) throws Exception {
+        return simpleQuestionnaireService.getQuestionnaireById(questionnaireId);
+    }
+
 }
