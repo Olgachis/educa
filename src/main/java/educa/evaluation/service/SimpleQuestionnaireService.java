@@ -156,6 +156,8 @@ public class SimpleQuestionnaireService {
             simpleQuestionnaire.setTitleFunc("response");
         }
 
+        simpleQuestionnaire.setActive(true);
+
         if(data.getQuestionnaire() != null){
             simpleQuestionnaire.setQuestionsJson(gson.toJson(data.getQuestionnaire()));
         }

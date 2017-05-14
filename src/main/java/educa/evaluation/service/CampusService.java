@@ -77,5 +77,9 @@ public class CampusService {
         }
         return null;
     }
+
+    public CampusData saveCampus(CampusData campusData){
+        return null;
+    }
 }
 

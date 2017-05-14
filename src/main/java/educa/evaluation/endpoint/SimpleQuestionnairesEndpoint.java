@@ -23,7 +23,7 @@ public class SimpleQuestionnairesEndpoint {
 
 
     @POST
-    public SimpleQuestionnaireData createQuestionnaire(SimpleQuestionnaireData data) throws Exception {
+    public SimpleQuestionnaireData saveQuestionnaire(SimpleQuestionnaireData data) throws Exception {
         simpleQuestionnaireService.create(data);
         return data;
     }
