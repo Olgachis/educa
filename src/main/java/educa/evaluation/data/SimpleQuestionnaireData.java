@@ -13,5 +13,6 @@ public class SimpleQuestionnaireData {
     private String responseId;
     private Map<String, ?> questionnaire;
     private Long responseCount;
+    private boolean active;
 
 }

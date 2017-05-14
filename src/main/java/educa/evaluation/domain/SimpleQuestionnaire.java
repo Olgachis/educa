@@ -21,6 +21,8 @@ public class SimpleQuestionnaire extends BaseModel {
     @NotBlank
     private String title;
 
+    private Boolean active;
+
     @Lob
     @NotBlank
     @Type(type = "org.hibernate.type.TextType")

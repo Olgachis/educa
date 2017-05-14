@@ -44,9 +44,25 @@ public class SimpleQuestionnaireService {
             simpleQuestionnaireData.setId(domain.getId());
             simpleQuestionnaireData.setName(domain.getTitle());
             simpleQuestionnaireData.setQuestionnaire(gson.fromJson(domain.getQuestionsJson(), Map.class));
+            simpleQuestionnaireData.setResponseCount(enabledEditQuestionnaire(domain.getId()));
+            simpleQuestionnaireData.setActive(domain.getActive());
+
             result.add(simpleQuestionnaireData);
         });
         return result;
+    }
+
+    private Long enabledEditQuestionnaire(String questionnaireId){
+        Long count = 0L;
+
+        try{
+            count = simpleResponseRepository.countByQuestionnaireId(questionnaireId);
+            System.out.println("---- exitSimpleResponse ----" + count);
+
+        } catch (Exception e){
+
+        }
+        return count;
     }
 
     public void save(SimpleQuestionnaireData data) throws ScriptException {
@@ -145,10 +161,11 @@ public class SimpleQuestionnaireService {
         }
         simpleQuestionnaire = simpleQuestionnaireRepository.save(simpleQuestionnaire);
         data.setId(simpleQuestionnaire.getId());
-        System.out.println("---- simpleQuestionnaire ----" + simpleQuestionnaire);
+
     }
 
     public SimpleQuestionnaireData getQuestionnaireById(String questionnaireId) throws Exception{
+        System.out.println("---- getQuestionnaireById ----" );
         Gson gson = new Gson();
 
         SimpleQuestionnaire simpleQuestionnaire = Optional.ofNullable(questionnaireId)
@@ -159,6 +176,7 @@ public class SimpleQuestionnaireService {
         simpleQuestionnaireData.setId(simpleQuestionnaire.getId());
         simpleQuestionnaireData.setName(simpleQuestionnaire.getTitle());
         simpleQuestionnaireData.setQuestionnaire(gson.fromJson(simpleQuestionnaire.getQuestionsJson(), Map.class));
+
         return simpleQuestionnaireData;
     }
 
