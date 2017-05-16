@@ -57,7 +57,6 @@ public class SimpleQuestionnaireService {
 
         try{
             count = simpleResponseRepository.countByQuestionnaireId(questionnaireId);
-            System.out.println("---- exitSimpleResponse ----" + count);
 
         } catch (Exception e){
 
@@ -156,7 +155,7 @@ public class SimpleQuestionnaireService {
             simpleQuestionnaire.setTitleFunc("response");
         }
 
-        simpleQuestionnaire.setActive(true);
+        simpleQuestionnaire.setActive(false);
 
         if(data.getQuestionnaire() != null){
             simpleQuestionnaire.setQuestionsJson(gson.toJson(data.getQuestionnaire()));
