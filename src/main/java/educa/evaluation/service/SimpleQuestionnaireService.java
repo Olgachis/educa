@@ -151,10 +151,10 @@ public class SimpleQuestionnaireService {
                 .orElse(new SimpleQuestionnaire());
 
         if(simpleQuestionnaire.getId() == null){
-            simpleQuestionnaire.setTitle(data.getName());
             simpleQuestionnaire.setTitleFunc("response");
         }
 
+        simpleQuestionnaire.setTitle(data.getName());
         simpleQuestionnaire.setActive(false);
 
         if(data.getQuestionnaire() != null){
@@ -184,5 +184,6 @@ public class SimpleQuestionnaireService {
     private String generateTilte(String simpleQuestionnaireName){
         return  UUID.randomUUID().toString() + simpleQuestionnaireName  ;
     }
+
 
 }
