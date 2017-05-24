@@ -48,4 +48,11 @@ public class SimpleQuestionnaireEndpoint {
         return data;
     }
 
+    @GET
+    @Path("/{id}/listFullResponses")
+    public QuestionnaireResponses listFullResponses(@PathParam("id") String id) {
+        System.out.print("----------- listFullResponses -----------");
+        return simpleQuestionnaireService.listFullResponses(id);
+    }
+
 }

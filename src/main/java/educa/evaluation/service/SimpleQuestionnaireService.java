@@ -120,6 +120,7 @@ public class SimpleQuestionnaireService {
                 .stream()
                 .sorted((r1, r2) -> r1.getDateCreated().compareTo(r2.getDateCreated()))
                 .map(r -> {
+                    System.out.println("hola");
                     SimpleQuestionnaireResponse response = new SimpleQuestionnaireResponse();
                     response.setData(gson.fromJson(r.getSimpleResponse(), Map.class));
                     response.setId(r.getId());
