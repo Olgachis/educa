@@ -46,7 +46,8 @@ public class SimpleQuestionnaireService {
             simpleQuestionnaireData.setQuestionnaire(gson.fromJson(domain.getQuestionsJson(), Map.class));
             simpleQuestionnaireData.setResponseCount(enabledEditQuestionnaire(domain.getId()));
             simpleQuestionnaireData.setActive(domain.getActive());
-
+            simpleQuestionnaireData.setTitleFunc(domain.getTitleFunc());
+            simpleQuestionnaireData.setActive(domain.getActive());
             result.add(simpleQuestionnaireData);
         });
         return result;
@@ -151,19 +152,16 @@ public class SimpleQuestionnaireService {
                 .map(simpleQuestionnaireRepository::findOne)
                 .orElse(new SimpleQuestionnaire());
 
-        if(simpleQuestionnaire.getId() == null){
-            simpleQuestionnaire.setTitleFunc("response");
-        }
-
         simpleQuestionnaire.setTitle(data.getName());
-        simpleQuestionnaire.setActive(false);
+        simpleQuestionnaire.setTitleFunc(data.getTitleFunc());
+        simpleQuestionnaire.setActive(data.getActive());
 
         if(data.getQuestionnaire() != null){
             simpleQuestionnaire.setQuestionsJson(gson.toJson(data.getQuestionnaire()));
         }
+
         simpleQuestionnaire = simpleQuestionnaireRepository.save(simpleQuestionnaire);
         data.setId(simpleQuestionnaire.getId());
-
     }
 
     public SimpleQuestionnaireData getQuestionnaireById(String questionnaireId) throws Exception{
@@ -177,14 +175,14 @@ public class SimpleQuestionnaireService {
         SimpleQuestionnaireData simpleQuestionnaireData = new SimpleQuestionnaireData();
         simpleQuestionnaireData.setId(simpleQuestionnaire.getId());
         simpleQuestionnaireData.setName(simpleQuestionnaire.getTitle());
+        simpleQuestionnaireData.setTitleFunc(simpleQuestionnaire.getTitleFunc());
+        simpleQuestionnaireData.setActive(simpleQuestionnaire.getActive());
         simpleQuestionnaireData.setQuestionnaire(gson.fromJson(simpleQuestionnaire.getQuestionsJson(), Map.class));
 
         return simpleQuestionnaireData;
     }
 
-    private String generateTilte(String simpleQuestionnaireName){
-        return  UUID.randomUUID().toString() + simpleQuestionnaireName  ;
-    }
+
 
 
 }

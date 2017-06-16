@@ -13,6 +13,18 @@ public class SimpleQuestionnaireData {
     private String responseId;
     private Map<String, ?> questionnaire;
     private Long responseCount;
-    private boolean active;
+    private Boolean active;
+    private String titleFunc;
 
+    @Override
+    public String toString() {
+        return "SimpleQuestionnaireData{" +
+          "responseId='" + responseId + '\'' +
+          ", id='" + id + '\'' +
+          ", name='" + name + '\'' +
+          ", responseCount=" + responseCount +
+          ", active=" + active +
+          ", titleFunc='" + titleFunc + '\'' +
+          '}';
+    }
 }

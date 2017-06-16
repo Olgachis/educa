@@ -14,7 +14,6 @@ import javax.persistence.Lob;
 public class SimpleQuestionnaire extends BaseModel {
 
     @Lob
-    @NotBlank
     @Type(type = "org.hibernate.type.TextType")
     private String titleFunc;
 
@@ -27,4 +26,5 @@ public class SimpleQuestionnaire extends BaseModel {
     @NotBlank
     @Type(type = "org.hibernate.type.TextType")
     private String questionsJson;
+
 }
