@@ -14,15 +14,17 @@ import javax.persistence.Lob;
 public class SimpleQuestionnaire extends BaseModel {
 
     @Lob
-    @NotBlank
     @Type(type = "org.hibernate.type.TextType")
     private String titleFunc;
 
     @NotBlank
     private String title;
 
+    private Boolean active;
+
     @Lob
     @NotBlank
     @Type(type = "org.hibernate.type.TextType")
     private String questionsJson;
+
 }

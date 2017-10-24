@@ -17,6 +17,8 @@ public class JerseyConfig extends ResourceConfig {
         register(QuestionnaireEndpoint.class);
         register(SimpleQuestionnaireEndpoint.class);
         register(ExportEndpoint.class);
+        register(CampusEndpoint.class);
+        register(SimpleQuestionnairesEndpoint.class);
     }
 
 }

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import educa.evaluation.data.QuestionnaireResponses;
 import educa.evaluation.data.SimpleQuestionnaireData;
 import educa.evaluation.data.SimpleQuestionnaireResponse;
+import educa.evaluation.domain.SimpleQuestionnaire;
 import educa.evaluation.domain.SimpleResponse;
 import educa.evaluation.repository.SimpleQuestionnaireRepository;
 import educa.evaluation.repository.SimpleResponseRepository;
@@ -21,6 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -41,9 +44,25 @@ public class SimpleQuestionnaireService {
             simpleQuestionnaireData.setId(domain.getId());
             simpleQuestionnaireData.setName(domain.getTitle());
             simpleQuestionnaireData.setQuestionnaire(gson.fromJson(domain.getQuestionsJson(), Map.class));
+            simpleQuestionnaireData.setResponseCount(enabledEditQuestionnaire(domain.getId()));
+            simpleQuestionnaireData.setActive(domain.getActive());
+            simpleQuestionnaireData.setTitleFunc(domain.getTitleFunc());
+            simpleQuestionnaireData.setActive(domain.getActive());
             result.add(simpleQuestionnaireData);
         });
         return result;
+    }
+
+    private Long enabledEditQuestionnaire(String questionnaireId){
+        Long count = 0L;
+
+        try{
+            count = simpleResponseRepository.countByQuestionnaireId(questionnaireId);
+
+        } catch (Exception e){
+
+        }
+        return count;
     }
 
     public void save(SimpleQuestionnaireData data) throws ScriptException {
@@ -102,6 +121,7 @@ public class SimpleQuestionnaireService {
                 .stream()
                 .sorted((r1, r2) -> r1.getDateCreated().compareTo(r2.getDateCreated()))
                 .map(r -> {
+                    System.out.println("hola");
                     SimpleQuestionnaireResponse response = new SimpleQuestionnaireResponse();
                     response.setData(gson.fromJson(r.getSimpleResponse(), Map.class));
                     response.setId(r.getId());
@@ -123,4 +143,46 @@ public class SimpleQuestionnaireService {
         res.setData(gson.fromJson(response.getSimpleResponse(), Map.class));
         return res;
     }
+
+    public void create(SimpleQuestionnaireData data) throws ScriptException {
+        Gson gson = new Gson();
+        System.out.println("---- create ----");
+
+        SimpleQuestionnaire simpleQuestionnaire = Optional.ofNullable(data.getId())
+                .map(simpleQuestionnaireRepository::findOne)
+                .orElse(new SimpleQuestionnaire());
+
+        simpleQuestionnaire.setTitle(data.getName());
+        simpleQuestionnaire.setTitleFunc(data.getTitleFunc());
+        simpleQuestionnaire.setActive(data.getActive());
+
+        if(data.getQuestionnaire() != null){
+            simpleQuestionnaire.setQuestionsJson(gson.toJson(data.getQuestionnaire()));
+        }
+
+        simpleQuestionnaire = simpleQuestionnaireRepository.save(simpleQuestionnaire);
+        data.setId(simpleQuestionnaire.getId());
+    }
+
+    public SimpleQuestionnaireData getQuestionnaireById(String questionnaireId) throws Exception{
+        System.out.println("---- getQuestionnaireById ----" );
+        Gson gson = new Gson();
+
+        SimpleQuestionnaire simpleQuestionnaire = Optional.ofNullable(questionnaireId)
+                .map(simpleQuestionnaireRepository::findOne)
+                .orElseThrow(Exception::new);
+
+        SimpleQuestionnaireData simpleQuestionnaireData = new SimpleQuestionnaireData();
+        simpleQuestionnaireData.setId(simpleQuestionnaire.getId());
+        simpleQuestionnaireData.setName(simpleQuestionnaire.getTitle());
+        simpleQuestionnaireData.setTitleFunc(simpleQuestionnaire.getTitleFunc());
+        simpleQuestionnaireData.setActive(simpleQuestionnaire.getActive());
+        simpleQuestionnaireData.setQuestionnaire(gson.fromJson(simpleQuestionnaire.getQuestionsJson(), Map.class));
+
+        return simpleQuestionnaireData;
+    }
+
+
+
+
 }

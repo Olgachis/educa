@@ -145,6 +145,7 @@ public class DimensionService {
           );
     }
 
+<<<<<<< HEAD
     public QuestionnaireData listQualityModelDimensions(User user, boolean filterCampus, int year) {
         //System.out.println("----------------------- listQualityModelDimensions -------------------------");
         Campus campus = user.getCampus();
@@ -153,6 +154,13 @@ public class DimensionService {
         //System.out.println("----------------------- questionnaireId -------------------------" + questionnaireId);
 
         Questionnaire questionnaire = questionnaireRepository.findOne(questionnaireId);
+=======
+    public QuestionnaireData listQualityModelDimensions(User user, boolean filterCampus) {
+        
+        Campus campus = user.getCampus();
+
+        Questionnaire questionnaire = questionnaireRepository.findOne(types.get(campus.getType()));
+>>>>>>> tablero
 
         final Campus primaryCampus;
         final User primaryUser;
@@ -164,6 +172,7 @@ public class DimensionService {
             primaryCampus = null;
             primaryUser = null;
         }
+
 
         List<String> dimensionNames = questionnaire.getSections().stream()
             //ordenar

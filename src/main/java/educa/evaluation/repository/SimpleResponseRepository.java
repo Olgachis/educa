@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface SimpleResponseRepository extends PagingAndSortingRepository<SimpleResponse, String> {
     public List<SimpleResponse> findAllResponsesByQuestionnaireId(String id);
+    public Long countByQuestionnaireId(String id);
+
 }
