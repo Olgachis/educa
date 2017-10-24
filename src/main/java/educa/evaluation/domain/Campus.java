@@ -49,4 +49,12 @@ public class Campus extends BaseModel {
         return builder.toString();
     }
 
+    @java.lang.Override
+    public java.lang.String toString() {
+        return "Campus{" +
+          "institution=" + institution +
+          ", name='" + name + '\'' +
+          ", campusName='" + campusName + '\'' +
+          '}';
+    }
 }

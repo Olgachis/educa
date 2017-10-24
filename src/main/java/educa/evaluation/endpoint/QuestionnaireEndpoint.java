@@ -24,6 +24,7 @@ public class QuestionnaireEndpoint {
 
     @GET
     public QuestionnaireData getQualityEvaluationData() {
+        //System.out.println("------------------ getQualityEvaluationData ------------------");
         return dimensionService.listQualityModelDimensions(true);
     }
 

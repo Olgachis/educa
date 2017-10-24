@@ -19,4 +19,5 @@ public class Questionnaire extends BaseModel {
     @OneToMany(mappedBy = "questionnaire")
     private List<Section> sections;
 
+    private Integer period;
 }

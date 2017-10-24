@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -58,7 +59,15 @@ public class DimensionService {
 
     public QuestionnaireData saveSubdimension(String subdimensionId, SubDimensionData subdimension, boolean filterCampus) {
         User user = securityService.getCurrentUser();
-        Questionnaire questionnaire = questionnaireRepository.findOne(types.get(user.getCampus().getType()));
+
+        LocalDateTime currentTime = LocalDateTime.now();
+        int year = currentTime.getYear() + 1;
+        String questionnaireId = types.get(user.getCampus().getType()) + "-" + year ;
+
+        Questionnaire questionnaire = questionnaireRepository.findOne(questionnaireId);
+
+        //System.out.println("------------------ saveSubdimension ------------------");
+
 
         Section section = sectionRepository.findByQuestionnaireAndSubdimensionId(questionnaire, subdimensionId);
         SectionResponse responseDomain = Optional.ofNullable(sectionResponseRepository.findByUserAndSection(user, section))
@@ -123,7 +132,12 @@ public class DimensionService {
     }
 
     public Map<String, Boolean> showCampusRelevant(Campus campus) {
-        Questionnaire questionnaire = questionnaireRepository.findOne(types.get(campus.getType()));
+
+        LocalDateTime currentTime = LocalDateTime.now();
+        int year = currentTime.getYear() + 1;
+        String questionnaireId = types.get(campus.getType()) + "-" + year ;
+
+        Questionnaire questionnaire = questionnaireRepository.findOne(questionnaireId);
 
         return questionnaire.getSections().stream()
           .collect(
@@ -131,9 +145,14 @@ public class DimensionService {
           );
     }
 
-    public QuestionnaireData listQualityModelDimensions(User user, boolean filterCampus) {
+    public QuestionnaireData listQualityModelDimensions(User user, boolean filterCampus, int year) {
+        //System.out.println("----------------------- listQualityModelDimensions -------------------------");
         Campus campus = user.getCampus();
-        Questionnaire questionnaire = questionnaireRepository.findOne(types.get(campus.getType()));
+
+        String questionnaireId = types.get(campus.getType()) + "-" + year ;
+        //System.out.println("----------------------- questionnaireId -------------------------" + questionnaireId);
+
+        Questionnaire questionnaire = questionnaireRepository.findOne(questionnaireId);
 
         final Campus primaryCampus;
         final User primaryUser;
@@ -147,10 +166,12 @@ public class DimensionService {
         }
 
         List<String> dimensionNames = questionnaire.getSections().stream()
+            //ordenar
                 .sorted((s1, s2) -> Integer.parseInt(s1.getDimensionId()) - Integer.parseInt(s2.getDimensionId()))
                 .map(Section::getDimension)
                 .distinct()
                 .collect(Collectors.toList());
+
 
 
         Map<String, DimensionData> dimensions = questionnaire.getSections().stream()
@@ -167,6 +188,7 @@ public class DimensionService {
                 .entrySet()
                 .stream()
                 .map(entry -> {
+
                     Map<String, SubDimensionData> subdimensions = entry.getValue().stream()
                             .filter(s -> checkElegibility(user, s))
                             .sorted()
@@ -204,6 +226,9 @@ public class DimensionService {
                                 );
                             })
                             .collect(Collectors.toMap(s -> s.getId().getNumber(), s-> s));
+
+
+
                     return new DimensionData(entry.getKey(), subdimensions);
                 })
                 .collect(Collectors.toMap(d -> d.getId().getNumber(), d -> d));
@@ -222,7 +247,9 @@ public class DimensionService {
     }
 
     public QuestionnaireData listQualityModelDimensions(boolean filterCampus) {
-        return listQualityModelDimensions(securityService.getCurrentUser(), filterCampus);
+        LocalDateTime currentTime = LocalDateTime.now();
+        int year = currentTime.getYear() + 1;
+        return listQualityModelDimensions(securityService.getCurrentUser(), filterCampus, year);
     }
 
     private String findResponse(SectionResponse sectionResponse, String id) {

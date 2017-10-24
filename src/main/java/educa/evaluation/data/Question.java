@@ -13,4 +13,18 @@ public class Question {
     private final boolean valuable;
     private final List<OptionData> options;
     private final int priority;
+
+    @java.lang.Override
+    public java.lang.String toString() {
+        return "Question{" +
+          "id='" + id + '\'' +
+          ", type='" + type + '\'' +
+          ", question='" + question + '\'' +
+          ", value='" + value + '\'' +
+          ", valuable=" + valuable +
+          ", options=" + options +
+          ", priority=" + priority +
+          '}';
+    }
 }
+

@@ -13,4 +13,13 @@ public class SubDimensionData {
     private final String comment;
     private final Integer sortOrder;
 
+    @java.lang.Override
+    public java.lang.String toString() {
+        return "SubDimensionData{" +
+          "id=" + id +
+          ", questions=" + questions +
+          ", comment='" + comment + '\'' +
+          ", sortOrder=" + sortOrder +
+          '}';
+    }
 }

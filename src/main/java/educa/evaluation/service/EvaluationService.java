@@ -22,6 +22,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @Service
 @Transactional
@@ -82,6 +84,7 @@ public class EvaluationService {
                                 .collect(Collectors.toMap(dr -> dr.getId().getNumber(), dr -> dr)))
                         .build())
                 .map(r -> QuestionnaireResults.builder()
+                  //para calculo
                         .maxPoints(r.getMaxPoints() / partialResults.size())
                         .maxQuestions(r.getMaxQuestions() / partialResults.size())
                         .maxCountingQuestions(r.getMaxCountingQuestions() / partialResults.size())
@@ -104,21 +107,29 @@ public class EvaluationService {
     }
 
     public QuestionnaireResults listResults() {
+        System.out.print("-------- listResults -------- " );
         return listResults(securityService.getCurrentUser().getUsername());
     }
 
     public QuestionnaireResults listResults(@NotNull String username) {
+        System.out.print("-------- listResults -------- " + username);
         User user = userRepository.findByUsername(username);
-        QuestionnaireData questionnaireData = dimensionService.listQualityModelDimensions(user, false);
+        LocalDateTime currentTime = LocalDateTime.now();
+        int year = currentTime.getYear() + 1;
+
+        QuestionnaireData questionnaireData = dimensionService.listQualityModelDimensions(user, false, year);
 
         List<DimensionResults> dimensionResults = questionnaireData.getDimensions().values()
                 .stream()
                 .map(dimensionData -> {
+                    //System.out.print("--- dimensionData:  " + dimensionData.getId());
                     List<SubdimensionResults> subdimensionResults = dimensionData.getSubdimensions().values()
                             .stream()
                             .map(subDimensionData -> {
                                 QuestionAcc subdimensionAcc = subDimensionData.getQuestions().stream()
                                         .map(question -> {
+                                            //System.out.println("--- question:  " + question.getId());
+                                            //aqui
                                             List<OptionData> options = Optional.ofNullable(question.getOptions())
                                                     .orElse(Arrays.asList(
                                                             new OptionData("true", true),
@@ -302,7 +313,9 @@ public class EvaluationService {
 
     private ImprovementPlan getDefaultMap(Campus campus) {
         User user = userRepository.findByCampus(campus);
-        QuestionnaireData data = dimensionService.listQualityModelDimensions(user, false);
+        LocalDateTime currentTime = LocalDateTime.now();
+        int year = currentTime.getYear() + 1;
+        QuestionnaireData data = dimensionService.listQualityModelDimensions(user, false, year);
         QuestionnaireResults results = listResults(user.getUsername());
         int priorityYear = (int)Math.floor((results.getMaxQuestions() - results.getMaxCountingQuestions()) / 4.0d);
         List<ImprovementQuestion> questions = data.getDimensions().values().stream()
@@ -408,7 +421,9 @@ public class EvaluationService {
     private QuestionnaireResults listPrediction(String username) {
         User user = userRepository.findByUsername(username);
         ImprovementPlan improvementPlan = getImprovementPlan(user.getCampus().getId(), false);
-        QuestionnaireData questionnaireData = dimensionService.listQualityModelDimensions(user, false);
+        LocalDateTime currentTime = LocalDateTime.now();
+        int year = currentTime.getYear() + 1;
+        QuestionnaireData questionnaireData = dimensionService.listQualityModelDimensions(user, false, year);
 
         Map<String, Boolean> plannedResults = improvementPlan.getQuestions().stream()
                 .collect(Collectors.toMap(q -> q.getId(), q->q.isSelected()));
