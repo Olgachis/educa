@@ -112,7 +112,7 @@ public class EvaluationService {
     }
 
     public QuestionnaireResults listResults(@NotNull String username) {
-        System.out.print("-------- listResults -------- " + username);
+        System.out.println("-------- listResults -------- " + username);
         User user = userRepository.findByUsername(username);
         LocalDateTime currentTime = LocalDateTime.now();
         int year = currentTime.getYear() + 1;
@@ -128,29 +128,59 @@ public class EvaluationService {
                             .map(subDimensionData -> {
                                 QuestionAcc subdimensionAcc = subDimensionData.getQuestions().stream()
                                         .map(question -> {
-                                            //System.out.println("--- question:  " + question.getId());
-                                            //aqui
+                                          /*
+                                          //System.out.println("--- question:  " + question.getId() + "--- getPriority:  " + question.getPriority());
+                                            if(question !=null && question.getId().equals("2018-ac1.2")){
+                                              System.out.println("--- question:  " + question.getId());
+                                              System.out.println("--- getPriority:  " + question.getPriority());
+                                            }
+                                            */
                                             List<OptionData> options = Optional.ofNullable(question.getOptions())
                                                     .orElse(Arrays.asList(
-                                                            new OptionData("true", true),
-                                                            new OptionData("false", false)
+                                                            new OptionData("cierto", 1),
+                                                            new OptionData("parcialmente", .5),
+                                                            new OptionData("falso", 0),
+                                                            new OptionData("enProceso", .5),
+                                                            new OptionData("na", 0)
                                                     ));
+
                                             OptionData option = options.stream()
                                                     .filter(optionData -> optionData.getName().equals(question.getValue()))
                                                     .findFirst()
                                                     .orElse(null);
+                                          if( question.getId().equals("101") || question.getId().equals("102") || question.getId().equals("103")){
+                                            System.out.println("--- question:  " + question.getId() + "--- getPriority:  " + question.getPriority());
+
+                                            System.out.println("--- option:  " + option.getValue());
+                                          }
+                                            //System.out.println("--- question:  " + question.getId() + "--- getPriority:  " + question.getPriority());
+                                            //System.out.println("--- question:  " + question.getQuestion());
+                                            //System.out.println("--- question:  " + question.getPriority());
+                                            //System.out.println("--- option:  " + option.getValue());
+                                            //System.out.println("---------------------  " );
+
                                             return QuestionAcc.builder()
                                                     .value(Optional.ofNullable(option)
-                                                            .map(o -> o.isValuable()? question.getPriority():0)
+                                                            .map(o ->
+                                                              o.isValuable()? question.getPriority():0
+                                                            )
                                                             .orElse(0))
                                                     .questions(Optional.ofNullable(option)
                                                             .map(o -> 1)
                                                             .orElse(0))
-                                                    .maxValue(question.getPriority())
+                                                    .maxValue(Optional.ofNullable(option)
+                                                      .map(o ->
+                                                        (Integer) question.getPriority() == 4 ? 2 :1)
+                                                      .orElse(0)
+                                                    )
                                                     .maxQuestions(1)
                                                     .maxCountingQuestions(Optional.ofNullable(option)
                                                             .map(o -> o.isValuable()?1:0)
                                                             .orElse(0))
+                                                    .points(Optional.ofNullable(option)
+                                                      .map(o ->
+                                                        question.getPriority() == 4 ? o.getValue() * 2 : o.getValue())
+                                                      .orElse(0.0))
                                                     .build();
                                         })
                                         .reduce((acc, current) -> {
@@ -160,17 +190,23 @@ public class EvaluationService {
                                                     .maxCountingQuestions(acc.getMaxCountingQuestions() + current.getMaxCountingQuestions())
                                                     .questions(acc.getQuestions() + current.getQuestions())
                                                     .value(acc.getValue() + current.getValue())
+                                                    .points(acc.getPoints() + current.getPoints())
                                                     .build();
                                         })
                                         .orElse(QuestionAcc.builder().build());
+                                if(subDimensionData.getId().getNumber().equals("3.5")){
+                                  System.out.println("subDimension: " +subDimensionData.getId() + " --- puntos:  " + subdimensionAcc.getPoints());
+                                }
+
+
                                 return SubdimensionResults.builder()
                                         .id(subDimensionData.getId())
                                         .maxQuestions(subdimensionAcc.getMaxQuestions())
                                         .maxCountingQuestions(subdimensionAcc.getMaxCountingQuestions())
-                                        .maxPoints(subdimensionAcc.getMaxValue())
+                                        .maxPoints((float) subdimensionAcc.getMaxValue())
                                         .minimumRequiredQuestions(subdimensionAcc.getMaxQuestions() * 0.7f)
                                         .questions(subdimensionAcc.getQuestions())
-                                        .points(subdimensionAcc.getValue())
+                                        .points((float) subdimensionAcc.getPoints())
                                         .sortOrder(subDimensionData.getSortOrder())
                                         .build();
                             })
@@ -200,7 +236,7 @@ public class EvaluationService {
                                         .build();
                             })
                             .get();
-
+                    //System.out.println("ds: " +ds.getId() + " --- puntos:  " + ds.getPoints());
                     return ds;
                 })
                 .collect(Collectors.toList());
@@ -438,8 +474,15 @@ public class EvaluationService {
                                         .map(question -> {
                                             List<OptionData> options = Optional.ofNullable(question.getOptions())
                                                     .orElse(Arrays.asList(
-                                                            new OptionData("true", true),
-                                                            new OptionData("false", false)
+                                                            //new OptionData("true", true),
+                                                            //new OptionData("false", false)
+
+                                                            new OptionData("cierto", 1),
+                                                            new OptionData("parcialmente", .5),
+                                                            new OptionData("falso", 0),
+                                                            new OptionData("enProceso", .5),
+                                                            new OptionData("na", 0)
+
                                                     ));
                                             OptionData option = options.stream()
                                                     .filter(optionData -> optionData.getName().equals(question.getValue()))
@@ -448,6 +491,9 @@ public class EvaluationService {
                                             int value = Optional.ofNullable(option)
                                                             .map(o -> o.isValuable()? question.getPriority():0)
                                                             .orElse(0);
+                                            double points = Optional.ofNullable(option)
+                                                .map(o ->  o.getValue() )
+                                                .orElse(0d);
                                             int questionAnswered = Optional.ofNullable(option)
                                                             .map(o -> 1)
                                                             .orElse(0);
@@ -464,6 +510,7 @@ public class EvaluationService {
                                                     .maxValue(question.getPriority())
                                                     .maxQuestions(1)
                                                     .maxCountingQuestions(maxCountingQuestion)
+                                                    .points(points)
                                                     .build();
                                         })
                                         .reduce((acc, current) -> {
@@ -473,6 +520,7 @@ public class EvaluationService {
                                                     .maxCountingQuestions(acc.getMaxCountingQuestions() + current.getMaxCountingQuestions())
                                                     .questions(acc.getQuestions() + current.getQuestions())
                                                     .value(acc.getValue() + current.getValue())
+                                                    .points(acc.getPoints() + current.getPoints())
                                                     .build();
                                         })
                                         .orElse(QuestionAcc.builder().build());
@@ -480,7 +528,7 @@ public class EvaluationService {
                                         .id(subDimensionData.getId())
                                         .maxQuestions(subdimensionAcc.getMaxQuestions())
                                         .maxCountingQuestions(subdimensionAcc.getMaxCountingQuestions())
-                                        .maxPoints(subdimensionAcc.getMaxValue())
+                                        .maxPoints((float) subdimensionAcc.getMaxValue())
                                         .minimumRequiredQuestions(subdimensionAcc.getMaxQuestions() * 0.7f)
                                         .questions(subdimensionAcc.getQuestions())
                                         .points(subdimensionAcc.getValue())
@@ -578,9 +626,10 @@ public class EvaluationService {
     private static class QuestionAcc {
         private int value;
         private int questions;
-        private int maxValue;
+        private double maxValue;
         private int maxQuestions;
         private int maxCountingQuestions;
+        private double points;
     }
 
 }

@@ -58,6 +58,8 @@ public class DimensionService {
     }
 
     public QuestionnaireData saveSubdimension(String subdimensionId, SubDimensionData subdimension, boolean filterCampus) {
+        System.out.println("------------------ saveSubdimension ------------------");
+
         User user = securityService.getCurrentUser();
 
         LocalDateTime currentTime = LocalDateTime.now();
@@ -65,8 +67,6 @@ public class DimensionService {
         String questionnaireId = types.get(user.getCampus().getType()) + "-" + year ;
 
         Questionnaire questionnaire = questionnaireRepository.findOne(questionnaireId);
-
-        //System.out.println("------------------ saveSubdimension ------------------");
 
 
         Section section = sectionRepository.findByQuestionnaireAndSubdimensionId(questionnaire, subdimensionId);
@@ -149,24 +149,27 @@ public class DimensionService {
         //System.out.println("----------------------- listQualityModelDimensions -------------------------");
         Campus campus = user.getCampus();
 
+        //System.out.println("campus.getType(): " + campus.getType());
+        //System.out.println("campus.getPrimaryCampus(): " + campus.getPrimaryCampus());
+        //System.out.println("campus.getInstitution(): " + campus.getInstitution());
+
         String questionnaireId = types.get(campus.getType()) + "-" + year ;
-        //System.out.println("----------------------- questionnaireId -------------------------" + questionnaireId);
 
         Questionnaire questionnaire = questionnaireRepository.findOne(questionnaireId);
 
         final Campus primaryCampus;
         final User primaryUser;
 
-        if(!campus.getPrimaryCampus()) {
+        if(campus.getPrimaryCampus() == false) {
             primaryCampus = campusRepository.findByInstitutionAndPrimaryCampus(campus.getInstitution(), true);
             primaryUser = userRepository.findByCampus(primaryCampus);
+
         } else {
             primaryCampus = null;
             primaryUser = null;
         }
 
         List<String> dimensionNames = questionnaire.getSections().stream()
-            //ordenar
                 .sorted((s1, s2) -> Integer.parseInt(s1.getDimensionId()) - Integer.parseInt(s2.getDimensionId()))
                 .map(Section::getDimension)
                 .distinct()
@@ -205,6 +208,10 @@ public class DimensionService {
                                 List<Question> questions = dbQuestions.getQuestions().stream()
                                         .map(q -> {
                                             String response = findResponse(sectionResponse, q.getId());
+                                            if( q.getId().equals("101") || q.getId().equals("102") || q.getId().equals("103")){
+                                              System.out.println("--- question:  " + q.getId()  + response + " q.getOptions() " + q.getOptions());
+                                            }
+
                                             boolean valuable = "true".equals(response) || Optional.ofNullable(q.getOptions())
                                                     .map(options -> {
                                                         return options.stream()
@@ -214,7 +221,9 @@ public class DimensionService {
                                                                 .contains(response);
                                                     })
                                                     .orElse(false);
-                                            return new Question(q.getId(), "checkbox", q.getQuestion(), response, valuable, q.getOptions(), q.getPriority());
+
+
+                                          return new Question(q.getId(), "checkbox", q.getQuestion(), response, valuable, q.getOptions(), q.getPriority());
                                         })
                                         .collect(Collectors.toList());
 
@@ -256,7 +265,12 @@ public class DimensionService {
         if(sectionResponse == null) {
             return null;
         }
+
+        //System.out.println("--- q.getId():  " + sectionResponse.getId());
+        //System.out.println("--- q.getId():  " + id);
+
         SubdimensionResponse response = gson.fromJson(sectionResponse.getResponseJson(), SubdimensionResponse.class);
+
         return Optional.ofNullable(response.getResponses())
                 .orElse(Collections.emptyList())
                 .stream()
