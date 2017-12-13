@@ -148,11 +148,13 @@ public class EvaluationService {
                                                     .filter(optionData -> optionData.getName().equals(question.getValue()))
                                                     .findFirst()
                                                     .orElse(null);
+                                          /*
                                           if( question.getId().equals("101") || question.getId().equals("102") || question.getId().equals("103")){
                                             System.out.println("--- question:  " + question.getId() + "--- getPriority:  " + question.getPriority());
 
                                             System.out.println("--- option:  " + option.getValue());
                                           }
+                                          */
                                             //System.out.println("--- question:  " + question.getId() + "--- getPriority:  " + question.getPriority());
                                             //System.out.println("--- question:  " + question.getQuestion());
                                             //System.out.println("--- question:  " + question.getPriority());
@@ -194,9 +196,9 @@ public class EvaluationService {
                                                     .build();
                                         })
                                         .orElse(QuestionAcc.builder().build());
-                                if(subDimensionData.getId().getNumber().equals("3.5")){
-                                  System.out.println("subDimension: " +subDimensionData.getId() + " --- puntos:  " + subdimensionAcc.getPoints());
-                                }
+                                //if(subDimensionData.getId().getNumber().equals("3.5")){
+                                //  System.out.println("subDimension: " +subDimensionData.getId() + " --- puntos:  " + subdimensionAcc.getPoints());
+                                //}
 
 
                                 return SubdimensionResults.builder()

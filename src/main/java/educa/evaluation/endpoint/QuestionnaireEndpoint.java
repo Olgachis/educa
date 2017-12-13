@@ -61,8 +61,6 @@ public class QuestionnaireEndpoint {
     @POST
     @Path("{subdimensionId}")
     public QuestionnaireData saveEvaluation(@PathParam("subdimensionId") String subdimensionId, SubDimensionData subdimension) {
-        System.out.println("------------------ saveEvaluation ------------------");
-        System.out.println("subdimensionId: " + subdimensionId);
         return dimensionService.saveSubdimension(subdimensionId, subdimension, true);
     }
 

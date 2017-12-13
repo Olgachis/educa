@@ -58,7 +58,7 @@ public class DimensionService {
     }
 
     public QuestionnaireData saveSubdimension(String subdimensionId, SubDimensionData subdimension, boolean filterCampus) {
-        System.out.println("------------------ saveSubdimension ------------------");
+        //System.out.println("------------------ saveSubdimension ------------------");
 
         User user = securityService.getCurrentUser();
 
@@ -208,10 +208,11 @@ public class DimensionService {
                                 List<Question> questions = dbQuestions.getQuestions().stream()
                                         .map(q -> {
                                             String response = findResponse(sectionResponse, q.getId());
-                                            if( q.getId().equals("101") || q.getId().equals("102") || q.getId().equals("103")){
+                                          /*
+                                            if( q.getId().equals("73.4.2") || q.getId().equals("73.4.3") ){
                                               System.out.println("--- question:  " + q.getId()  + response + " q.getOptions() " + q.getOptions());
                                             }
-
+                                          */
                                             boolean valuable = "true".equals(response) || Optional.ofNullable(q.getOptions())
                                                     .map(options -> {
                                                         return options.stream()
