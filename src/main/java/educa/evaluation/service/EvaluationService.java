@@ -115,7 +115,7 @@ public class EvaluationService {
         System.out.println("-------- listResults -------- " + username);
         User user = userRepository.findByUsername(username);
         LocalDateTime currentTime = LocalDateTime.now();
-        int year = currentTime.getYear() + 1;
+        int year = currentTime.getYear();
 
         QuestionnaireData questionnaireData = dimensionService.listQualityModelDimensions(user, false, year);
 
@@ -352,7 +352,7 @@ public class EvaluationService {
     private ImprovementPlan getDefaultMap(Campus campus) {
         User user = userRepository.findByCampus(campus);
         LocalDateTime currentTime = LocalDateTime.now();
-        int year = currentTime.getYear() + 1;
+        int year = currentTime.getYear();
         QuestionnaireData data = dimensionService.listQualityModelDimensions(user, false, year);
         QuestionnaireResults results = listResults(user.getUsername());
         int priorityYear = (int)Math.floor((results.getMaxQuestions() - results.getMaxCountingQuestions()) / 4.0d);
@@ -460,7 +460,7 @@ public class EvaluationService {
         User user = userRepository.findByUsername(username);
         ImprovementPlan improvementPlan = getImprovementPlan(user.getCampus().getId(), false);
         LocalDateTime currentTime = LocalDateTime.now();
-        int year = currentTime.getYear() + 1;
+        int year = currentTime.getYear();
         QuestionnaireData questionnaireData = dimensionService.listQualityModelDimensions(user, false, year);
 
         Map<String, Boolean> plannedResults = improvementPlan.getQuestions().stream()

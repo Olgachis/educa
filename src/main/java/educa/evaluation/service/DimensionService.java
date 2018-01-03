@@ -63,7 +63,7 @@ public class DimensionService {
         User user = securityService.getCurrentUser();
 
         LocalDateTime currentTime = LocalDateTime.now();
-        int year = currentTime.getYear() + 1;
+        int year = currentTime.getYear();
         String questionnaireId = types.get(user.getCampus().getType()) + "-" + year ;
 
         Questionnaire questionnaire = questionnaireRepository.findOne(questionnaireId);
@@ -134,7 +134,7 @@ public class DimensionService {
     public Map<String, Boolean> showCampusRelevant(Campus campus) {
 
         LocalDateTime currentTime = LocalDateTime.now();
-        int year = currentTime.getYear() + 1;
+        int year = currentTime.getYear();
         String questionnaireId = types.get(campus.getType()) + "-" + year ;
 
         Questionnaire questionnaire = questionnaireRepository.findOne(questionnaireId);
@@ -155,10 +155,17 @@ public class DimensionService {
 
         String questionnaireId = types.get(campus.getType()) + "-" + year ;
 
+        //System.out.println(" questionnaireId " + questionnaireId);
+
         Questionnaire questionnaire = questionnaireRepository.findOne(questionnaireId);
 
         final Campus primaryCampus;
         final User primaryUser;
+
+        //System.out.println(" questionnaire " + questionnaire.getId());
+        //System.out.println(" campus id" + campus.getId());
+        //System.out.println(" campus " + campus.getName());
+        //System.out.println(" getInstitution " + campus.getInstitution());
 
         if(campus.getPrimaryCampus() == false) {
             primaryCampus = campusRepository.findByInstitutionAndPrimaryCampus(campus.getInstitution(), true);
@@ -169,8 +176,14 @@ public class DimensionService {
             primaryUser = null;
         }
 
+
+
         List<String> dimensionNames = questionnaire.getSections().stream()
-                .sorted((s1, s2) -> Integer.parseInt(s1.getDimensionId()) - Integer.parseInt(s2.getDimensionId()))
+                .sorted((s1, s2) -> {
+                    System.out.print(" s1 " + s1.getDimensionId());
+                    System.out.print(" s2 " + s2.getDimensionId());
+                    return  Integer.parseInt(s1.getDimensionId()) - Integer.parseInt(s2.getDimensionId());
+                })
                 .map(Section::getDimension)
                 .distinct()
                 .collect(Collectors.toList());
@@ -258,7 +271,7 @@ public class DimensionService {
 
     public QuestionnaireData listQualityModelDimensions(boolean filterCampus) {
         LocalDateTime currentTime = LocalDateTime.now();
-        int year = currentTime.getYear() + 1;
+        int year = currentTime.getYear();
         return listQualityModelDimensions(securityService.getCurrentUser(), filterCampus, year);
     }
 
